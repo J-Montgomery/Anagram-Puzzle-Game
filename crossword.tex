@@ -12,43 +12,50 @@
 \colorbox{gray}{\makebox(1,1){}}}}
 }}
 \begin{document}
-
+\vspace*{-4cm}
 \section*{Rules}
 
 \begin{enumerate}
-    \item Each puzzle word uses only letters found in the base word
-    \item The solution is a grammatically correct expression where:
+    \item Each unknown uses only letters found in the base word
+    \item The solution is a complete expression where:
     \begin{enumerate}
         \item Words further left appear before words further right in the solution
-        \item Words above the base word come before it in the solution
-        \item Words below the base word come after it in the solution
+        \item Words with more letters above the base appear before in the solution
+        \item Words with more letters below the base appear after in the solution
+        \item Words cascade vertically, from top to bottom.
     \end{enumerate}
 \end{enumerate}
 
 \section*{\#1}
+Ben had a feeling that the Astronomy department was a little short on money.
+\vspace*{1em}
 \begin{Puzzle}{12}{8}
 |*        |[][f]S   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
-|*        |[][f]A   |*        |[][f]U   |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |[][f]A   |*        |[][Sf]U  |*        |*        |*        |*        |*        |*        |*        |*        |.
 |[][Sf]P  |[][Sf]L  |[][Sf]A  |[][Sf]N  |[][Sf]E  |[][Sf]T  |[][Sf]A  |[][Sf]R  |[][Sf]I  |[][Sf]U  |[][Sf]M  |[][Sf]S  |.
-|*        |[][f]E   |[][f]T   |[][f]R   |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.
-|*        |*        |*        |[][f]E   |*        |*        |*        |[][f]T   |*        |*        |*        |*        |.
+|*        |[][Sf]E  |[][f]T   |[][f]R   |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.
+|*        |*        |*        |[][f]E   |*        |*        |*        |[][Sf]T  |*        |*        |*        |*        |.
 |*        |*        |*        |[][f]A   |*        |*        |*        |[][f]E   |*        |*        |*        |*        |.
 |*        |*        |*        |[][f]L   |*        |*        |*        |[][f]S   |*        |*        |*        |*        |.
 \end{Puzzle}
 
-\section*{\#2}
-\begin{Puzzle}{15}{10}
-|*        |[][f]I   |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |.
-|*        |[][f]N   |*        |*        |*        |*        |[][f]R   |*        |*        |*        |[][f]S   |*        |*        |*        |*        |.
-|*        |[][f]V   |*        |*        |*        |*        |[][f]A   |*        |*        |*        |[][f]C   |*        |*        |*        |*        |.
-|*        |[][f]E   |*        |*        |*        |*        |[][f]T   |*        |*        |*        |[][f]E   |*        |*        |*        |*        |.
-|[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
-|*        |[][f]T   |*        |*        |*        |*        |[][f]S   |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.
-|*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |[][f]R   |*        |*        |*        |*        |.
-|*        |[][f]R   |*        |*        |*        |*        |*        |*        |*        |*        |[][f]I   |*        |*        |*        |*        |.
-|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |.
-\end{Puzzle}
+% \section*{\#2}
 
+% Doc Brown is always coming up with the silliest ideas.
+% \vspace*{1em}
+% \begin{Puzzle}{15}{10}
+% |*        |[][f]I   |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |.
+% |*        |[][f]N   |*        |*        |*        |*        |[][f]R   |*        |*        |*        |[][f]S   |*        |*        |*        |*        |.
+% |*        |[][Sf]V  |*        |*        |*        |*        |[][f]A   |*        |*        |*        |[][f]C   |*        |*        |*        |*        |.
+% |*        |[][f]E   |*        |*        |*        |*        |[][f]T   |*        |*        |*        |[][f]E   |*        |*        |*        |*        |.
+% |[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
+% |*        |[][f]T   |*        |*        |*        |*        |[][f]S   |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.
+% |*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |[][f]R   |*        |*        |*        |*        |.
+% |*        |[][f]R   |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |*        |*        |*        |*        |.
+% |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |.
+% \end{Puzzle}
+
+\newpage
 \begin{center}
 \textbf{This page intentionally left blank. Solutions start on the \hyperlink{page.3}{next page}}
 \end{center}
@@ -71,21 +78,21 @@ Sale! Planetariums at unreal rates.
 
 \newpage
 
-\section*{Solution \#2}
+% \section*{Solution \#2}
 
-Inventor orates inconsequential scenario.
+% Inventor orates inconsequential scenario.
 
-\vspace*{0.5cm}
-\begin{Puzzle}{15}{10}
-|*        |[][Sf]I  |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |.
-|*        |[][Sf]N  |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |[][Sf]S  |*        |*        |*        |*        |.
-|*        |[][Sf]V  |*        |*        |*        |*        |[][Sf]A  |*        |*        |*        |[][Sf]C  |*        |*        |*        |*        |.
-|*        |[][Sf]E  |*        |*        |*        |*        |[][Sf]T  |*        |*        |*        |[][Sf]E  |*        |*        |*        |*        |.
-|[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
-|*        |[][Sf]T  |*        |*        |*        |*        |[][Sf]S  |*        |*        |*        |[][Sf]A  |*        |*        |*        |*        |.
-|*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |*        |.
-|*        |[][Sf]R  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |*        |*        |*        |*        |.
-|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |.
-\end{Puzzle}
+% \vspace*{0.5cm}
+% \begin{Puzzle}{15}{10}
+% |*        |[][Sf]I  |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |.
+% |*        |[][Sf]N  |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |[][Sf]S  |*        |*        |*        |*        |.
+% |*        |[][Sf]V  |*        |*        |*        |*        |[][Sf]A  |*        |*        |*        |[][Sf]C  |*        |*        |*        |*        |.
+% |*        |[][Sf]E  |*        |*        |*        |*        |[][Sf]T  |*        |*        |*        |[][Sf]E  |*        |*        |*        |*        |.
+% |[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
+% |*        |[][Sf]T  |*        |*        |*        |*        |[][Sf]S  |*        |*        |*        |[][Sf]A  |*        |*        |*        |*        |.
+% |*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |*        |.
+% |*        |[][Sf]R  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |*        |*        |*        |*        |.
+% |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |.
+% \end{Puzzle}
 
 \end{document}
