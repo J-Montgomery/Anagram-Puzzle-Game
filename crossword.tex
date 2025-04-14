@@ -1,8 +1,11 @@
 \documentclass[letterpaper]{article}
 
-\usepackage[unboxed]{cwpuzzle}
-\usepackage{xcolor}
-\usepackage{hyperref}
+\usepackage{cwpuzzle}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+\usepackage{float, wrapfig, xcolor, hyperref}
+
 \pagestyle{empty}
 
 \definecolor{gray}{gray}{.9}
@@ -11,21 +14,69 @@
 \fboxsep=0pt
 \colorbox{gray}{\makebox(1,1){}}}}
 }}
+
+
 \begin{document}
-\vspace*{-4cm}
 \section*{Rules}
 
 \begin{enumerate}
-    \item Each unknown uses only letters found in the base word
-    \item The solution is a complete expression where:
+    \item Each unknown word cascades vertically and is a partial anagram of the base word
+    \item The solution is an expression using the base word and unknowns where:
     \begin{enumerate}
-        \item Words further left appear before words further right in the solution
-        \item Words with more letters above the base appear before in the solution
-        \item Words with more letters below the base appear after in the solution
-        \item Words cascade vertically, from top to bottom.
+        \item Unknowns appear in the same order from left to right as the solution
+        \item Unknowns with more letters above the base word appear before it
+        \item Unknowns with more letters below the base word appear after it
+        \item Unknowns with equal letters above and below can be either
     \end{enumerate}
 \end{enumerate}
 
+\vspace*{1em}
+\section*{Example}
+
+This clue relates to the intended solution: Buffalo Buffalo
+
+\vspace*{1em}
+\begin{figure}[H]
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \begin{Puzzle}{7}{12}
+        |*        |*        |*        |*        |*        |*        |*        |.
+        |*        |*        |*        |[][Sf]B  |*        |*        |*        |.
+        |*        |*        |[][f]B   |[][f]U   |*        |*        |*        |.
+        |*        |[][f]B   |[][f]U   |[][f]F   |*        |*        |*        |.
+        |[][Sf]B  |[][Sf]U  |[][Sf]F  |[][Sf]F  |[][Sf]A  |[][Sf]L  |[][Sf]O  |.
+        |[][f]U   |[][f]F   |[][f]F   |[][f]A   |*        |*        |*        |.
+        |[][f]F   |[][f]F   |[][f]A   |[][Sf]L  |*        |*        |*        |.
+        |[][f]F   |[][f]A   |[][f]L   |[][f]O   |*        |*        |*        |.
+        |[][Sf]A  |[][f]L   |[][f]O   |*        |*        |*        |*        |.
+        |[][f]L   |[][f]O   |*        |*        |*        |*        |*        |.
+        |[][f]O   |*        |*        |*        |*        |*        |*        |.
+        \end{Puzzle}
+    \caption*{Puzzle}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+    \centering
+    \begin{Puzzle}{7}{12}
+        |*        |*        |*        |*        |*        |*        |*        |.
+        |*        |*        |*        |[][Sf]B  |*        |*        |*        |.
+        |*        |*        |[][Sf]B  |[][Sf]U  |*        |*        |*        |.
+        |*        |[][Sf]B  |[][Sf]U  |[][Sf]F  |*        |*        |*        |.
+        |[][Sf]B  |[][Sf]U  |[][Sf]F  |[][Sf]F  |[][Sf]A  |[][Sf]L  |[1][Sf]O |.
+        |[][Sf]U  |[][Sf]F  |[][Sf]F  |[][Sf]A  |*        |*        |*        |.
+        |[][Sf]F  |[][Sf]F  |[][Sf]A  |[][Sf]L  |*        |*        |*        |.
+        |[][Sf]F  |[][Sf]A  |[][Sf]L  |[5][Sf]O |*        |*        |*        |.
+        |[][Sf]A  |[][Sf]L  |[4][Sf]O |*        |*        |*        |*        |.
+        |[][Sf]L  |[3][Sf]O |*        |*        |*        |*        |*        |.
+        |[2][Sf]O |*        |*        |*        |*        |*        |*        |.
+        \end{Puzzle}
+    \caption*{Solution with word order shown}
+\end{minipage}
+\end{figure}
+
+The solution is \textbf{Buffalo\textsuperscript{1} Buffalo\textsuperscript{2} Buffalo\textsuperscript{3} Buffalo\textsuperscript{4} Buffalo\textsuperscript{5}}
+
+\newpage
 \section*{\#1}
 Ben had a feeling that the Astronomy department was a little short on money.
 \vspace*{1em}
@@ -39,31 +90,98 @@ Ben had a feeling that the Astronomy department was a little short on money.
 |*        |*        |*        |[][f]L   |*        |*        |*        |[][f]S   |*        |*        |*        |*        |.
 \end{Puzzle}
 
-% \section*{\#2}
+\vspace*{-0.5cm}
+\section*{\#2}
 
-% Doc Brown is always coming up with the silliest ideas.
-% \vspace*{1em}
-% \begin{Puzzle}{15}{10}
-% |*        |[][f]I   |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |.
-% |*        |[][f]N   |*        |*        |*        |*        |[][f]R   |*        |*        |*        |[][f]S   |*        |*        |*        |*        |.
-% |*        |[][Sf]V  |*        |*        |*        |*        |[][f]A   |*        |*        |*        |[][f]C   |*        |*        |*        |*        |.
-% |*        |[][f]E   |*        |*        |*        |*        |[][f]T   |*        |*        |*        |[][f]E   |*        |*        |*        |*        |.
-% |[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
-% |*        |[][f]T   |*        |*        |*        |*        |[][f]S   |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.
-% |*        |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |[][f]R   |*        |*        |*        |*        |.
-% |*        |[][f]R   |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |*        |*        |*        |*        |.
-% |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]O   |*        |*        |*        |*        |.
-% \end{Puzzle}
+An Inconvenient Truth:
+\vspace*{1em}
+\begin{Puzzle}{12}{11}
+|*        |[][f]A   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |[][f]C   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |[][Sf]T  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |[][f]I   |[][f]O   |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]R  |[][Sf]V  |[][Sf]A  |[][Sf]T  |[][Sf]I  |[][Sf]O  |[][Sf]N  |.
+|*        |[][f]N   |*        |[][f]A   |*        |*        |*        |*        |*        |*        |*        |[][f]A   |. 
+|*        |[][f]S   |*        |[][Sf]V  |*        |*        |*        |*        |*        |*        |*        |[][f]T   |.
+|*        |*        |*        |[][f]E   |*        |*        |*        |*        |*        |*        |*        |[][f]I   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]O   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]N   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]S  |.
+\end{Puzzle}
+
+\section*{\#3}
+What people say about product placement:
+\vspace*{1em}
+\begin{Puzzle}{11}{9}
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |*        |*        |*        |*        |*        |[][Sf]V  |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |[][f]A   |*        |*        |*        |*        |.  
+|[][Sf]A  |[][Sf]D  |[][Sf]V  |[][Sf]E  |[][Sf]R  |[][Sf]T  |[][Sf]I  |[][Sf]S  |[][Sf]I  |[][Sf]N  |[][Sf]G  |.
+|*        |*        |*        |*        |*        |*        |[][f]N   |*        |[][f]S   |*        |[][f]R   |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]N  |*        |[][f]E   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |[][f]T   |*        |[][f]A   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]T  |.
+\end{Puzzle}
+
+
+\section*{\#4}
+Where's Geralt?
+\vspace*{1em}
+\begin{Puzzle}{11}{9}
+|*        |*        |*        |*        |*        |*        |*        |*        |[][f]B   |*        |*        |. 
+|*        |*        |*        |*        |[][Sf]D  |*        |*        |*        |[][f]A   |*        |*        |.  
+|*        |*        |*        |*        |[][f]R   |[][f]B   |*        |*        |[][Sf]R  |*        |*        |.
+|*        |*        |*        |*        |[][f]A   |[][f]U   |*        |*        |[][Sf]O  |*        |*        |.  
+|[][Sf]B  |[][Sf]A  |[][Sf]C  |[][Sf]K  |[][Sf]G  |[][Sf]R  |[][Sf]O  |[][Sf]U  |[][Sf]N  |[][Sf]D  |[][Sf]S  |.
+|*        |*        |*        |*        |[][f]O   |[][f]N   |*        |*        |*        |*        |*        |. 
+|*        |*        |*        |*        |[][f]N   |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |[][f]S   |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+\end{Puzzle}
+
+\section*{\#5}
+Mary Antoinnette didn't know it, but
+
+\vspace*{1em}
+\begin{Puzzle}{11}{9}
+|*        |*        |[][f]Q   |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |*        |[][f]U   |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |*        |[][Sf]E  |*        |[][f]S   |*        |*        |*        |*        |*        |*        |.
+|*        |*        |[][f]E   |*        |[][f]E   |*        |*        |*        |[][f]O   |*        |*        |.  
+|[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]C  |[][Sf]E  |.
+|*        |*        |[][f]S   |*        |*        |*        |*        |*        |[][Sf]E  |*        |*        |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+\end{Puzzle}
+
+\section*{\#6}
+A lot of people think that
+
+\vspace*{1em}
+\begin{Puzzle}{11}{9}
+|[][f]V   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|[][f]I   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][f]N   |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|[][Sf]T  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][Sf]A  |[][Sf]D  |[][Sf]V  |[][Sf]E  |[][Sf]R  |[][Sf]T  |[][Sf]I  |[][Sf]S  |[][Sf]I  |[][Sf]N  |[][Sf]G  |.
+|[][f]G   |*        |*        |*        |*        |*        |[][f]S   |*        |*        |*        |[][f]R   |. 
+|[][Sf]E  |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]A   |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]N  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][f]D   |.
+\end{Puzzle}
 
 \newpage
 \begin{center}
-\textbf{This page intentionally left blank. Solutions start on the \hyperlink{page.3}{next page}}
+\textbf{This page intentionally left blank. Solutions start on the \hyperlink{page.6}{next page}}
 \end{center}
 
 \newpage
 
 \section*{Solution \#1}
-Sale! Planetariums at unreal rates.
+Ben had a feeling that the Astronomy department was a little short on money.
+\newline\textbf{Sale! Planetariums at unreal rates.}
 
 \vspace*{0.5cm}
 \begin{Puzzle}{12}{8}
@@ -78,21 +196,94 @@ Sale! Planetariums at unreal rates.
 
 \newpage
 
-% \section*{Solution \#2}
+\section*{Solution \#2}
 
-% Inventor orates inconsequential scenario.
+An Inconvenient Truth: \textbf{actions on conservation save nations}.
 
-% \vspace*{0.5cm}
-% \begin{Puzzle}{15}{10}
-% |*        |[][Sf]I  |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |.
-% |*        |[][Sf]N  |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |[][Sf]S  |*        |*        |*        |*        |.
-% |*        |[][Sf]V  |*        |*        |*        |*        |[][Sf]A  |*        |*        |*        |[][Sf]C  |*        |*        |*        |*        |.
-% |*        |[][Sf]E  |*        |*        |*        |*        |[][Sf]T  |*        |*        |*        |[][Sf]E  |*        |*        |*        |*        |.
-% |[][Sf]I  |[][Sf]N  |[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]T  |[][Sf]I  |[][Sf]A  |[][Sf]L  |.
-% |*        |[][Sf]T  |*        |*        |*        |*        |[][Sf]S  |*        |*        |*        |[][Sf]A  |*        |*        |*        |*        |.
-% |*        |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]R  |*        |*        |*        |*        |.
-% |*        |[][Sf]R  |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |*        |*        |*        |*        |.
-% |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]O  |*        |*        |*        |*        |.
-% \end{Puzzle}
+\vspace*{0.5cm}
+\begin{Puzzle}{12}{11}
+|*        |[][Sf]A  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |[][Sf]C  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |[][Sf]T  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |[][Sf]I  |[][Sf]O  |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]R  |[][Sf]V  |[][Sf]A  |[][Sf]T  |[][Sf]I  |[][Sf]O  |[][Sf]N  |.
+|*        |[][Sf]N  |*        |[][Sf]A  |*        |*        |*        |*        |*        |*        |*        |[][Sf]A  |. 
+|*        |[][Sf]S  |*        |[][Sf]V  |*        |*        |*        |*        |*        |*        |*        |[][Sf]T  |.
+|*        |*        |*        |[][Sf]E  |*        |*        |*        |*        |*        |*        |*        |[][Sf]I  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]O  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]N  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]S  |.
+\end{Puzzle}
+
+\newpage
+
+\section*{Solution \#3}
+What people say about product placement: \textbf{Vain advertising isn't great}.
+\vspace*{1em}
+\begin{Puzzle}{11}{9}
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |*        |*        |*        |*        |*        |[][Sf]V  |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |[][Sf]A  |*        |*        |*        |*        |.  
+|[][Sf]A  |[][Sf]D  |[][Sf]V  |[][Sf]E  |[][Sf]R  |[][Sf]T  |[][Sf]I  |[][Sf]S  |[][Sf]I  |[][Sf]N  |[][Sf]G  |.
+|*        |*        |*        |*        |*        |*        |[][Sf]N  |*        |[][Sf]S  |*        |[][Sf]R  |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]N  |*        |[][Sf]E  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]T  |*        |[][Sf]A  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]T  |.
+\end{Puzzle}
+
+\newpage
+
+\section*{Solution \#4}
+Where's Geralt? \textbf{Dragons burn baron backgrounds}.
+
+\vspace*{0.5cm}
+\begin{Puzzle}{11}{9}
+|*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]B  |*        |*        |. 
+|*        |*        |*        |*        |[][Sf]D  |*        |*        |*        |[][Sf]A  |*        |*        |.  
+|*        |*        |*        |*        |[][Sf]R  |[][Sf]B  |*        |*        |[][Sf]R  |*        |*        |.
+|*        |*        |*        |*        |[][Sf]A  |[][Sf]U  |*        |*        |[][Sf]O  |*        |*        |.  
+|[][Sf]B  |[][Sf]A  |[][Sf]C  |[][Sf]K  |[][Sf]G  |[][Sf]R  |[][Sf]O  |[][Sf]U  |[][Sf]N  |[][Sf]D  |[][Sf]S  |.
+|*        |*        |*        |*        |[][Sf]O  |[][Sf]N  |*        |*        |*        |*        |*        |. 
+|*        |*        |*        |*        |[][Sf]N  |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |[][Sf]S  |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+\end{Puzzle}
+
+\newpage
+\section*{Solution \#5}
+Mary Antoinnette didn't know it, but \textbf{queens see one consequence}.
+
+\vspace*{0.5cm}
+\begin{Puzzle}{11}{9}
+|*        |*        |[][Sf]Q  |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|*        |*        |[][Sf]U  |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|*        |*        |[][Sf]E  |*        |[][Sf]S  |*        |*        |*        |*        |*        |*        |.
+|*        |*        |[][Sf]E  |*        |[][Sf]E  |*        |*        |*        |[][Sf]O  |*        |*        |.  
+|[][Sf]C  |[][Sf]O  |[][Sf]N  |[][Sf]S  |[][Sf]E  |[][Sf]Q  |[][Sf]U  |[][Sf]E  |[][Sf]N  |[][Sf]C  |[][Sf]E  |.
+|*        |*        |[][Sf]S  |*        |*        |*        |*        |*        |[][Sf]E  |*        |*        |. 
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+\end{Puzzle}
+
+\newpage
+\section*{Solution \#6}
+A lot of people think that \textbf{vintage advertising is grand}.
+
+\vspace*{0.5cm}
+\begin{Puzzle}{11}{9}
+|[][Sf]V  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |. 
+|[][Sf]I  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][Sf]N  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.
+|[][Sf]T  |*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |.  
+|[][Sf]A  |[][Sf]D  |[][Sf]V  |[][Sf]E  |[][Sf]R  |[][Sf]T  |[][Sf]I  |[][Sf]S  |[][Sf]I  |[][Sf]N  |[][Sf]G  |.
+|[][Sf]G  |*        |*        |*        |*        |*        |[][Sf]S  |*        |*        |*        |[][Sf]R  |. 
+|[][Sf]E  |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]A  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]N  |.
+|*        |*        |*        |*        |*        |*        |*        |*        |*        |*        |[][Sf]D  |.
+\end{Puzzle}
+
+
 
 \end{document}

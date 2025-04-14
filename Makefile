@@ -3,7 +3,7 @@ BUILDDIR = build
 
 FONT ?= "Libertinus Serif"
 
-all: crossword2.pdf
+all: crossword.pdf
 
 %.pdf: %.tex
 	@mkdir -p $(BUILDDIR)
