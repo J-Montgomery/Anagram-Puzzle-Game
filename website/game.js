@@ -82,7 +82,7 @@ function isCellCorrect(cell) {
     return cell.value.toUpperCase() === correctLetter;
 }
 
-async function loadAndFilterDictionary(baseWord) {
+async function loadAndFilterDictionary(baseWord, additions = []) {
     const dictionaryPath = '/resource/wordlist';
 
     try {
@@ -98,6 +98,8 @@ async function loadAndFilterDictionary(baseWord) {
             word.length > 1 &&
             isPartialAnagram(word, baseWord)
         );
+
+        filteredWords.push(...additions);
 
         console.info(`Dictionary loaded. Found ${filteredWords.length} partial anagrams of "${baseWord}".`);
         return filteredWords;
@@ -445,11 +447,6 @@ function populateWordList() {
              displayWords.push(correctWord);
         } else if (displayWords.length < 5) {
              if(candidates.length > 4) displayWords.push(candidates[4]);
-        }
-
-         for (let i = displayWords.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [displayWords[i], displayWords[j]] = [displayWords[j], displayWords[i]];
         }
 
     } else {
@@ -860,7 +857,7 @@ function toggleNativeKeyboard(isEnabled) {
 
 async function initializeDictionary() {
     try {
-        dictionaryWords = await loadAndFilterDictionary(puzzle.baseWord);
+        dictionaryWords = await loadAndFilterDictionary(puzzle.baseWord, puzzle.anagrams);
         if (!Array.isArray(dictionaryWords)) {
              console.error("Dictionary did not load as an array!", dictionaryWords);
              dictionaryWords = []; // Fallback

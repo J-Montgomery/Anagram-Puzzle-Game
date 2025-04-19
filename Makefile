@@ -38,8 +38,9 @@ wordlist:
 	@aspell -d $(LIST_LANG) dump master | \
 		aspell -l $(LIST_LANG) expand |   \
 		grep -v "'" |                     \
-		sort |                            \
-		tr '[:lower:]' '[:upper:]' > $(WORDLIST)
+		tr '[:lower:]' '[:upper:]' |      \
+		uniq |                            \
+		sort > $(WORDLIST)
 	@echo "Wordlist generation complete: $(WORDLIST)"
 
 .PHONY: all clean watch list
