@@ -22,13 +22,20 @@ window.onclick = function(event) {
 // Easy Mode Toggle
 function toggleEasyMode(isEasy) {
     const possibleWordsDiv = document.getElementById('possibleWords');
+    if (!possibleWordsDiv || !puzzle) return; // Added check for puzzle existence
+
+    // Use toggle with the boolean 'force' argument
+    possibleWordsDiv.classList.toggle('visible', isEasy);
+
     if (isEasy) {
-        possibleWordsDiv.classList.add('visible');
         // Populate with random words or context-specific words
-        const randomWords = puzzle.anagrams.sort(() => 0.5 - Math.random()).slice(0, 5); // Show 5 random
-        populateWordList(randomWords);
+        // Ensure puzzle.anagrams exists before trying to use it
+        const wordsToShow = puzzle.anagrams
+            ? [...puzzle.anagrams].sort(() => 0.5 - Math.random()).slice(0, 5) // Show 5 random
+            : []; // Default to empty if anagrams aren't loaded
+        populateWordList(wordsToShow);
     } else {
-        possibleWordsDiv.classList.remove('visible');
+         populateWordList([]); // Clear list when turning off
     }
 }
 
@@ -118,13 +125,11 @@ function loadPuzzleData() {
                     letterIndex: letterIdx
                 };
 
-                // *** NEW: Check if this index should be pre-filled ***
                 if (prefilled.includes(letterIdx)) {
-                    layoutEntry.type = 3; // Assign new type for pre-filled unknown
-                    layoutEntry.char = word[letterIdx]; // Add the character
+                    layoutEntry.type = 3;
+                    layoutEntry.char = word[letterIdx];
                 } else {
                     layoutEntry.type = 1; // Standard unknown type
-                    // No char needed for type 1
                 }
                 generatedLayout.push(layoutEntry);
             }
@@ -173,34 +178,32 @@ function generateGrid() {
     });
 
     // Create grid cell elements based on calculated dimensions and layoutMap
-    for (let r = 0; r < puzzle.gridSize.rows; r++) {
-        for (let c = 0; c < puzzle.gridSize.cols; c++) {
-            const key = `${r}-${c}`;
+    for (let row = 0; row < puzzle.gridSize.rows; row++) {
+        for (let col = 0; col < puzzle.gridSize.cols; col++) {
+            const key = `${row}-${col}`;
             const cellDef = layoutMap.get(key); // Get the definition for this coordinate, if any
             let cellElement = null; // Initialize cellElement
 
             if (cellDef) {
-                // Cell has a definition in the layout
                 if (cellDef.type === 1) { // Type 1: Unknown (Editable Input)
                     cellElement = document.createElement('input');
                     cellElement.type = 'text';
                     cellElement.maxLength = 1;
                     cellElement.classList.add('grid-cell', 'cell-unknown');
-                    // Add data attributes for identification and logic
-                    cellElement.dataset.row = r;
-                    cellElement.dataset.col = c;
+
+                    cellElement.dataset.row = row;
+                    cellElement.dataset.col = col;
                     cellElement.dataset.wordIndex = cellDef.wordIndex;
                     cellElement.dataset.letterIndex = cellDef.letterIndex;
-                    // Ensure value is uppercase (can also be done on input event)
-                    cellElement.style.textTransform = 'uppercase';
 
+                    cellElement.style.textTransform = 'uppercase';
                 } else if (cellDef.type === 2) { // Type 2: Root Word Cell (Display Div)
                     cellElement = document.createElement('div');
                     cellElement.classList.add('grid-cell', 'cell-root');
                     cellElement.textContent = cellDef.char || ''; // Display the character
-                    // Add data attributes for validation and potential interaction
-                    cellElement.dataset.row = r;
-                    cellElement.dataset.col = c;
+
+                    cellElement.dataset.row = row;
+                    cellElement.dataset.col = col;
                     cellElement.dataset.wordIndex = cellDef.wordIndex;
                     cellElement.dataset.letterIndex = cellDef.letterIndex;
 
@@ -208,15 +211,15 @@ function generateGrid() {
                     cellElement = document.createElement('div');
                     cellElement.classList.add('grid-cell', 'cell-prefilled-unknown'); // Use specific class
                     cellElement.textContent = cellDef.char || ''; // Display the character
-                    // Add data attributes for validation
-                    cellElement.dataset.row = r;
-                    cellElement.dataset.col = c;
+
+                    cellElement.dataset.row = row;
+                    cellElement.dataset.col = col;
                     cellElement.dataset.wordIndex = cellDef.wordIndex;
                     cellElement.dataset.letterIndex = cellDef.letterIndex;
 
                 } else {
                     // Handle potential unknown types or fallback
-                    console.warn(`Unknown cell type ${cellDef.type} at [${r}, ${c}]. Rendering as empty.`);
+                    console.warn(`Unknown cell type ${cellDef.type} at [${row}, ${col}]. Rendering as empty.`);
                     cellElement = document.createElement('div');
                     cellElement.classList.add('grid-cell', 'cell-empty');
                 }
@@ -225,60 +228,45 @@ function generateGrid() {
                 // No definition for this coordinate - it's an empty background cell
                 cellElement = document.createElement('div');
                 cellElement.classList.add('grid-cell', 'cell-empty');
-                // No data attributes needed for purely empty cells
             }
 
-            // Append the created cell element to the container
             if (cellElement) {
                  container.appendChild(cellElement);
             }
-        } // End column loop
-    } // End row loop
+        }
+    }
 
-    // Remove existing listeners before adding new ones (prevents duplicates on potential re-renders)
-    // Note: This requires storing references or using anonymous functions carefully.
-    // A simpler approach for this example is just adding them, assuming generateGrid is called once on load.
-    // If re-rendering, proper listener cleanup is crucial.
-
-    // Add event listeners to the container using event delegation
     container.addEventListener('focusin', (event) => {
         if (event.target.matches('.cell-unknown')) {
-            lastFocusedCell = event.target; // Update tracker when an input cell gains focus
+            // Set the lastFocusedCell to the first unknown cell
+            lastFocusedCell = event.target;
         }
     });
 
-    container.addEventListener('input', handleGridInput); // Handle character input
-
-    container.addEventListener('keydown', handleGridKeyDown); // Handle Tab, Enter, Backspace
+    container.addEventListener('input', handleGridInput);
+    container.addEventListener('keydown', handleGridKeyDown);
 }
 
-
-// --- Easy Mode Word List Population (Example) ---
 function populateWordList(words) {
     const wordListDiv = document.getElementById('wordList');
     wordListDiv.innerHTML = ''; // Clear previous list
 
-    if (!puzzle) return; // Need puzzle data for anagrams
+    if (!puzzle) return;
 
-    // Determine words to display (e.g., random, or filtered based on focus)
-    // For now, let's just use the provided list or random anagrams
     let displayWords = words;
     if (!displayWords || displayWords.length === 0) {
-        // Example: Show N random anagrams if no specific list provided
         displayWords = [...puzzle.anagrams].sort(() => 0.5 - Math.random()).slice(0, 5);
     }
 
     displayWords.forEach(word => {
         const span = document.createElement('span');
         span.textContent = word;
-        // *** UPDATE: Call fillColumnWithWord on click ***
         span.onclick = () => {
-            fillColumnWithWord(word.toUpperCase()); // Pass the clicked word (uppercase)
+            fillColumnWithWord(word.toUpperCase());
         };
         wordListDiv.appendChild(span);
     });
 
-    // Add placeholder if easy mode is on but no words are shown
     if (displayWords.length === 0 && document.getElementById('easyModeCheckbox')?.checked) {
         wordListDiv.innerHTML = '<i>No suggestions available.</i>'; // Or other message
     } else if (!lastFocusedCell && document.getElementById('easyModeCheckbox')?.checked) {
@@ -289,18 +277,14 @@ function populateWordList(words) {
 
 function fillColumnWithWord(word) {
     if (!lastFocusedCell || !lastFocusedCell.matches('.cell-unknown')) {
-        // Ensure focus is actually on an input cell before proceeding
         alert("Please click on an input cell in the column you want to fill first.");
         return;
     }
-    if (!word || !puzzle || !puzzle.unknowns) return; // Basic safety checks
+    if (!word || !puzzle || !puzzle.unknowns) return;
 
     const targetCol = parseInt(lastFocusedCell.dataset.col);
-    const wordUpper = word.toUpperCase(); // Ensure comparison is case-insensitive
+    const wordUpper = word.toUpperCase();
 
-    // Find the definition for the unknown word in this column
-    // Note: Assumes only one unknown word per column for simplicity.
-    // If multiple words could share a column, this needs adjustment.
     const unknownDef = puzzle.unknowns.find(u => u.columnIndex === targetCol);
 
     if (!unknownDef) {
@@ -309,21 +293,17 @@ function fillColumnWithWord(word) {
         return;
     }
 
-    // Check if the clicked word's length matches the expected length from the definition
     if (wordUpper.length !== unknownDef.word.length) {
          alert(`Word "${wordUpper}" (${wordUpper.length} letters) does not match the expected length (${unknownDef.word.length} letters) for this column.`);
          return;
     }
 
 
-    let fillSuccessful = true; // Flag to track if filling works
+    let fillSuccessful = true;
 
-    // Iterate through each letter index of the word to be placed
     for (let letterIdx = 0; letterIdx < wordUpper.length; letterIdx++) {
-        // Calculate the target row in the grid for this letter
         const targetRow = puzzle.baseRowInGrid + (letterIdx - unknownDef.overlapIndex);
 
-        // Find the specific cell element at the calculated coordinate
         const cellElement = document.querySelector(`.grid-container .grid-cell[data-row="${targetRow}"][data-col="${targetCol}"]`);
 
         if (!cellElement || cellElement.classList.contains('cell-empty')) {
@@ -331,41 +311,30 @@ function fillColumnWithWord(word) {
             console.error(`Error placing word "${wordUpper}": No valid cell found at [${targetRow}, ${targetCol}] for letter index ${letterIdx}.`);
             alert(`Internal error: Grid layout mismatch for word "${wordUpper}".`);
             fillSuccessful = false;
-            break; // Stop trying to fill this word
+            break;
         }
 
         const expectedChar = wordUpper[letterIdx];
 
-        // Check the type of cell found
         if (cellElement.matches('.cell-unknown')) {
-            // It's an input cell, fill it
             cellElement.value = expectedChar;
         } else if (cellElement.matches('.cell-root') || cellElement.matches('.cell-prefilled-unknown')) {
-            // It's a pre-filled div (root overlap or pre-filled unknown)
-            // Verify the existing character matches the word being placed
             const existingChar = (cellElement.textContent || '').toUpperCase();
             if (existingChar !== expectedChar) {
-                // This suggests the clicked easy mode word is incorrect for the current puzzle state
                  console.warn(`Word "${wordUpper}" conflicts with pre-filled cell at [${targetRow}, ${targetCol}]. Expected "${expectedChar}", found "${existingChar}".`);
                  alert(`Word "${wordUpper}" cannot be placed here because it conflicts with a pre-filled letter ('${existingChar}').`);
                  fillSuccessful = false;
-                 // Optional: Clear any inputs already filled for this attempt?
-                 // (Could add logic here to revert changes made in this loop if needed)
-                 break; // Stop filling
+                 break;
             }
-            // If characters match, do nothing - the cell is already correctly filled.
         } else {
-            // Should not happen if querySelector is specific enough
             console.error(`Error placing word "${wordUpper}": Unexpected cell type found at [${targetRow}, ${targetCol}].`);
             fillSuccessful = false;
             break;
         }
-    } // End loop through letters
+    }
 
-    // Trigger solution check only if the fill attempt wasn't aborted
     if (fillSuccessful) {
         checkSolutionAttempt();
-        // Optional: Move focus after successful fill
         focusNextCell();
     }
 }
@@ -377,16 +346,13 @@ function checkSolutionAttempt() {
     let allWordsCorrect = true;
     const expectedWords = puzzle.solutionWords;
 
-    // Iterate through word indices
     for (let wordIdx = 0; wordIdx < expectedWords.length; wordIdx++) {
         const expectedWord = expectedWords[wordIdx].toUpperCase();
         let enteredWord = "";
 
-        // Loop through each letter index of the expected word
         for (let letterIdx = 0; letterIdx < expectedWord.length; letterIdx++) {
             let targetRow, targetCol;
 
-            // Calculate the coordinate for this specific letter
             if (wordIdx === 0) { // Base word (index 0)
                 targetRow = puzzle.baseRowInGrid;
                 targetCol = letterIdx;
@@ -397,8 +363,6 @@ function checkSolutionAttempt() {
                 targetRow = puzzle.baseRowInGrid + (letterIdx - overlapIndex);
             }
 
-            // Find the cell element at the calculated coordinate
-            // Use querySelector for potentially better performance than filtering all cells
             const cellElement = document.querySelector(`.grid-container .grid-cell[data-row="${targetRow}"][data-col="${targetCol}"]`);
 
             let char = '';
@@ -410,21 +374,19 @@ function checkSolutionAttempt() {
                     char = (cellElement.textContent || '').toUpperCase();
                 }
             } else {
-                // Should not happen if layout generation is correct, but good to handle
                 console.warn(`Cell not found at [${targetRow}, ${targetCol}] for word ${wordIdx}, letter ${letterIdx}`);
             }
             enteredWord += char;
-        } // End loop through letter indices
+        }
 
         // Compare the reconstructed word with the expected word
         if (enteredWord !== expectedWord) {
             console.log(`Mismatch for word ${wordIdx}: Expected "${expectedWord}", Got "${enteredWord}"`); // Debugging line
             allWordsCorrect = false;
-            break; // No need to check further words
+            break;
         }
-    } // End loop through word indices
+    }
 
-    // Update the solution display (Fade logic remains the same)
     if (allWordsCorrect) {
         if (solutionFadeOutTimeoutId) { clearTimeout(solutionFadeOutTimeoutId); solutionFadeOutTimeoutId = null; }
         solutionDisplay.textContent = puzzle.solutionSentence;
@@ -453,43 +415,38 @@ function focusNextCell() {
     // 1. Try finding next EMPTY cell down in the same column (starting from the row AFTER the current one)
     for (let r = startRow + 1; r < puzzle.gridSize.rows; r++) {
         const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${startCol}"]`);
-        // *** ADD CHECK: Is the cell empty? ***
         if (nextCell && nextCell.value === '') {
             nextCell.focus();
-            return; // Found and focused empty cell
+            return;
         }
     }
 
-    // 2. Try finding the first EMPTY cell in the next columns to the right
     for (let c = startCol + 1; c < puzzle.gridSize.cols; c++) {
-        // Check all rows in this column from top to bottom
         for (let r = 0; r < puzzle.gridSize.rows; r++) {
             const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-             // *** ADD CHECK: Is the cell empty? ***
             if (nextCell && nextCell.value === '') {
                 nextCell.focus();
-                return; // Found and focused empty cell
+                return;
             }
         }
     }
 
-    // 3. If still not found, wrap around: Try finding the first EMPTY cell from the top-left
-    for (let c = 0; c <= startCol; c++) { // Include current column in wrap-around search
+    // If still not found, wrap around: Try finding the first EMPTY cell from the top-left
+    for (let c = 0; c <= startCol; c++) {
         for (let r = 0; r < puzzle.gridSize.rows; r++) {
              // Don't wrap back to the exact starting cell unless it's the only one
              if (c === startCol && r === startRow) continue;
 
             const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-             // *** ADD CHECK: Is the cell empty? ***
             if (nextCell && nextCell.value === '') {
                 nextCell.focus();
-                return; // Found and focused empty cell
+                return;
             }
         }
     }
 
 
-    // 4. If no empty cell is found anywhere, do nothing (leave focus as is)
+    // If no empty cell is found anywhere, do nothing
 }
 function handleBackspace() {
     if (!lastFocusedCell) return;
@@ -501,46 +458,42 @@ function handleBackspace() {
     // If cell has content, just clear it (don't move focus yet)
     if (currentCell.value !== '') {
         currentCell.value = '';
-        checkSolutionAttempt(); // Re-check solution after clearing
         return;
     }
 
     // If cell is already empty, move focus backward
-
     // 1. Try finding previous cell up in the same column
     for (let r = currentRow - 1; r >= 0; r--) {
         const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${currentCol}"]`);
         if (prevCell) {
             prevCell.focus();
-            // prevCell.select(); // Optional
-            return; // Found and focused
+            // prevCell.select();
+            return;
         }
     }
 
     // 2. Try finding the last cell in the previous columns to the left
     for (let c = currentCol - 1; c >= 0; c--) {
-        for (let r = puzzle.gridSize.rows - 1; r >= 0; r--) { // Check rows bottom-up
+        for (let r = puzzle.gridSize.rows - 1; r >= 0; r--) {
             const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
             if (prevCell) {
                 prevCell.focus();
-                // prevCell.select(); // Optional
-                return; // Found and focused
+                // prevCell.select();
+                return;
             }
         }
     }
-    // If no previous cell, do nothing
 }
 
 function handleVirtualKeyboardClick(event) {
-    if (!event.target.matches('.key')) return; // Ignore clicks not on keys
+    if (!event.target.matches('.key')) return;
 
     const key = event.target.textContent;
 
     if (!lastFocusedCell) {
-        // Maybe focus the first input cell if none is selected?
         const firstInput = document.querySelector('.grid-cell.cell-unknown');
         if (firstInput) firstInput.focus();
-        if (!lastFocusedCell) return; // Still no focusable cell
+        if (!lastFocusedCell) return;
     }
 
     if (key === 'Enter') {
@@ -549,20 +502,17 @@ function handleVirtualKeyboardClick(event) {
         handleBackspace();
     } else if (key.length === 1 && key >= 'A' && key <= 'Z') { // Letter key
         lastFocusedCell.value = key;
-        checkSolutionAttempt(); // Check after input
-        focusNextCell();      // Move to next cell
+        checkSolutionAttempt();
+        focusNextCell();
     }
 }
 
 function handleGridInput(event) {
     if (!event.target.matches('.cell-unknown')) return;
 
-    // Ensure input is uppercase (optional)
     event.target.value = event.target.value.toUpperCase();
+    checkSolutionAttempt();
 
-    checkSolutionAttempt(); // Check solution after any input
-
-    // Auto-advance if a single character was entered
     if (event.target.value.length === 1) {
          // Use setTimeout to allow the input event to fully resolve before changing focus
          setTimeout(focusNextCell, 0);
@@ -574,49 +524,38 @@ function handleGridKeyDown(event) {
     if (!event.target.matches('.cell-unknown')) return;
 
     if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent default Enter behavior (like form submission)
+        event.preventDefault();
         focusNextCell();
     } else if (event.key === 'Tab') {
-        event.preventDefault(); // Prevent default Tab behavior
-        focusNextCell(); // Use our custom focus logic
+        event.preventDefault();
+        focusNextCell();
     } else if (event.key === 'Backspace') {
-        // If the cell is already empty when backspace is pressed, trigger backward movement
         if (event.target.value === '') {
-            event.preventDefault(); // Prevent default backspace (which might navigate back)
-            handleBackspace(); // Move focus backward
+            event.preventDefault();
+            handleBackspace();
         }
-        // If the cell is not empty, the default backspace will clear it,
-        // and the subsequent 'input' event will handle the checkSolutionAttempt.
     }
-    // Let other keys (like letters, arrows if desired) perform their default action
 }
 
 
 
-// --- Initial Setup ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Load, process, and validate puzzle data
     if (!loadPuzzleData()) {
-        // Error message is handled within loadPuzzleData
-        return; // Stop initialization
+        return;
     }
 
-    // Setup UI using the processed 'puzzle' object
     document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
-    generateGrid(); // Generate the grid using calculated layout/size
+    generateGrid();
 
     const firstInputCell = document.querySelector('.grid-cell.cell-unknown');
     if (firstInputCell) {
-        lastFocusedCell = firstInputCell; // Set initial tracker
-        // Optional: Uncomment the next line if you want the grid to have focus immediately on load
+        lastFocusedCell = firstInputCell;
         firstInputCell.focus();
     }
 
-    // Easy mode check (keep as is)
     const easyModeCheckbox = document.getElementById('easyModeCheckbox');
     if (easyModeCheckbox?.checked) { toggleEasyMode(true); }
 
-    // Input listener (keep as is)
     const gridContainer = document.getElementById('gridContainer');
     if (gridContainer) {
         gridContainer.addEventListener('input', (event) => {
@@ -631,7 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
         keyboard.addEventListener('click', handleVirtualKeyboardClick);
     }
 
-    // Initialize solution display (keep as is)
     const solutionDisplay = document.getElementById('solutionDisplay');
     solutionDisplay.textContent = '';
     solutionDisplay.style.opacity = 0;
