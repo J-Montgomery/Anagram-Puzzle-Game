@@ -116,7 +116,7 @@ ul.dashed > li:before {
 .solution-display {
     color: var(--solution-text);
     font-weight: bold;
-    min-height: 1.2em; /* Reserve space */
+    min-height: 1.5em; /* Reserve space */
     transition: opacity 0.5s ease-in-out;
     font-size: 1.5em;
 }
