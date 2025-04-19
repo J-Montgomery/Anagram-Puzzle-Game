@@ -1,5 +1,7 @@
 COMPILER = xelatex
 BUILDDIR = build
+WORDLIST ?= website/resource/wordlist
+LIST_LANG ?= en
 
 all: anagrammiton.pdf
 
@@ -31,5 +33,13 @@ list:
 	@for f in *.tex; do \
 		echo "  $${f%.tex}.pdf (from $$f)"; \
 	done
+
+wordlist:
+	@aspell -d $(LIST_LANG) dump master | \
+		aspell -l $(LIST_LANG) expand |   \
+		grep -v "'" |                     \
+		sort |                            \
+		tr '[:lower:]' '[:upper:]' > $(WORDLIST)
+	@echo "Wordlist generation complete: $(WORDLIST)"
 
 .PHONY: all clean watch list
