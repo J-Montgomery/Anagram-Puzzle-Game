@@ -55,6 +55,33 @@ function isPartialAnagram(word, baseWord) {
     return true;
 }
 
+function getGridCellElement(row, col) {
+    return document.querySelector(`.grid-container [data-row="${row}"][data-col="${col}"]`);
+}
+
+function isCellCorrect(cell) {
+    if (!cell || !cell.matches('.cell-unknown') || cell.value === '') {
+        return true;
+    }
+    if (!puzzle || !puzzle.solutionWords) {
+        console.warn("Cannot check correctness: Puzzle data missing.");
+        return true;
+    }
+
+    const wordIndex = parseInt(cell.dataset.wordIndex, 10);
+    const letterIndex = parseInt(cell.dataset.letterIndex, 10);
+
+    if (isNaN(wordIndex) || isNaN(letterIndex) || !puzzle.solutionWords[wordIndex] || letterIndex < 0 || letterIndex >= puzzle.solutionWords[wordIndex].length) {
+        console.warn(`Cannot check correctness: Invalid data attributes or word definition for cell at [${cell.dataset.row}, ${cell.dataset.col}]`);
+        return true;
+    }
+
+    const correctWord = puzzle.solutionWords[wordIndex].toUpperCase();
+    const correctLetter = correctWord[letterIndex];
+
+    return cell.value.toUpperCase() === correctLetter;
+}
+
 async function loadAndFilterDictionary(baseWord) {
     const dictionaryPath = '/resource/wordlist';
 
@@ -625,79 +652,113 @@ function checkSolutionAttempt() {
 }
 
 function focusNextCell() {
-    if (!lastFocusedCell || !puzzle) return;
+    if (!lastFocusedCell || !puzzle || !puzzle.gridSize) return;
 
     const currentCell = lastFocusedCell;
-    const startRow = parseInt(currentCell.dataset.row);
-    const startCol = parseInt(currentCell.dataset.col);
+    const startRow = parseInt(currentCell.dataset.row, 10);
+    const startCol = parseInt(currentCell.dataset.col, 10);
+    const numRows = puzzle.gridSize.rows;
+    const numCols = puzzle.gridSize.cols;
 
-    // 1. Try finding next EMPTY cell down in the same column (starting from the row AFTER the current one)
-    for (let r = startRow + 1; r < puzzle.gridSize.rows; r++) {
-        const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${startCol}"]`);
-        if (nextCell && nextCell.value === '') {
-            nextCell.focus();
+    // --- Phase 1: Find Next EMPTY Unknown Cell ---
+    // Search order: Down current col -> Next cols top-down -> Wrap cols top-down
+
+    // 1a. Down current column (from row AFTER current)
+    for (let r = startRow + 1; r < numRows; r++) {
+        const cell = getGridCellElement(r, startCol);
+        if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+            cell.focus();
             return;
         }
     }
 
-    for (let c = startCol + 1; c < puzzle.gridSize.cols; c++) {
-        for (let r = 0; r < puzzle.gridSize.rows; r++) {
-            const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-            if (nextCell && nextCell.value === '') {
-                nextCell.focus();
+    // 1b. Subsequent columns (top to bottom)
+    for (let c = startCol + 1; c < numCols; c++) {
+        for (let r = 0; r < numRows; r++) {
+            const cell = getGridCellElement(r, c);
+            if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+                cell.focus();
                 return;
             }
         }
     }
 
-    // If still not found, wrap around: Try finding the first EMPTY cell from the top-left
+    // 1c. Wrap around columns (from col 0 up to startCol, top to bottom)
     for (let c = 0; c <= startCol; c++) {
-        for (let r = 0; r < puzzle.gridSize.rows; r++) {
-             // Don't wrap back to the exact starting cell unless it's the only one
-             if (c === startCol && r === startRow) continue;
-
-            const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-            if (nextCell && nextCell.value === '') {
-                nextCell.focus();
+        for (let r = 0; r < numRows; r++) {
+            // Skip the starting cell itself during wrap-around search for *empty*
+            if (c === startCol && r === startRow) continue;
+            const cell = getGridCellElement(r, c);
+            if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+                cell.focus();
                 return;
             }
         }
     }
 
+    // 2a. Down current column (from row AFTER current)
+    for (let r = startRow + 1; r < numRows; r++) {
+        const cell = getGridCellElement(r, startCol);
+        // Check if it's a filled unknown cell AND it's incorrect
+        if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
+            cell.focus();
+            return;
+        }
+    }
 
-    // If no empty cell is found anywhere, do nothing
+    // 2b. Subsequent columns (top to bottom)
+    for (let c = startCol + 1; c < numCols; c++) {
+        for (let r = 0; r < numRows; r++) {
+            const cell = getGridCellElement(r, c);
+            if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
+                cell.focus();
+                return;
+            }
+        }
+    }
+
+    // 2c. Wrap around columns (from col 0 up to startCol, top to bottom)
+    // *Include* the starting cell this time in the check, as it might be the first incorrect one encountered
+    for (let c = 0; c <= startCol; c++) {
+        for (let r = 0; r < numRows; r++) {
+            const cell = getGridCellElement(r, c);
+            if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
+                cell.focus();
+                return;
+            }
+        }
+    }
 }
+
+
 function handleBackspace() {
-    if (!lastFocusedCell) return;
+    if (!lastFocusedCell || !puzzle || !puzzle.gridSize) return;
 
     const currentCell = lastFocusedCell;
-    const currentRow = parseInt(currentCell.dataset.row);
-    const currentCol = parseInt(currentCell.dataset.col);
+    const currentRow = parseInt(currentCell.dataset.row, 10);
+    const currentCol = parseInt(currentCell.dataset.col, 10);
 
-    // If cell has content, just clear it (don't move focus yet)
     if (currentCell.value !== '') {
         currentCell.value = '';
         return;
     }
 
     // If cell is already empty, move focus backward
-    // 1. Try finding previous cell up in the same column
+    // 1. Try finding previous unknown cell up in the same column
     for (let r = currentRow - 1; r >= 0; r--) {
-        const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${currentCol}"]`);
-        if (prevCell) {
+        const prevCell = getGridCellElement(r, currentCol);
+        if (prevCell && prevCell.matches('.cell-unknown')) {
             prevCell.focus();
-            // prevCell.select();
             return;
         }
     }
 
-    // 2. Try finding the last cell in the previous columns to the left
+    // 2. Try finding the last unknown cell in the previous columns (right-to-left, bottom-to-top)
     for (let c = currentCol - 1; c >= 0; c--) {
         for (let r = puzzle.gridSize.rows - 1; r >= 0; r--) {
-            const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-            if (prevCell) {
+            const prevCell = getGridCellElement(r, c);
+            if (prevCell && prevCell.matches('.cell-unknown')) {
                 prevCell.focus();
-                // prevCell.select();
                 return;
             }
         }
@@ -705,42 +766,27 @@ function handleBackspace() {
 }
 
 function handleKeyboardTouchStart(event) {
-    // // Only act on direct key presses
     if (event.target.matches('.key')) {
-        touchedKeyElement = event.target; // Remember the key
+        touchedKeyElement = event.target;
         touchedKeyElement.classList.add('key-pressed-visual');
-        // Optional: Prevent default if it interferes with scrolling/selection
-        // event.preventDefault();
     } else {
-        touchedKeyElement = null; // Reset if touch starts outside a key
+        touchedKeyElement = null;
     }
 }
 
 function handleKeyboardTouchEnd(event) {
-    // // Remove the visual style from the key that was being touched
     if (touchedKeyElement) {
-        // alert('Untouched key: ' + touchedKeyElement.textContent);
         touchedKeyElement.classList.remove('key-pressed-visual');
-        // Check if the touch ended *on the same key* it started on.
-        // This prevents triggering if the finger slides off.
         const touch = event.changedTouches[0];
         const elementReleasedOn = document.elementFromPoint(touch.clientX, touch.clientY);
-
-        if (elementReleasedOn === touchedKeyElement) {
-            // If touch ended on the original key, trigger the action
-            // We let the subsequent 'click' event handle the actual logic
-            // to avoid duplicating code and ensure desktop compatibility.
-            // However, if 'click' doesn't fire reliably after touchend on some devices,
-            // you might need to call processKeyPress(touchedKeyElement.textContent) here.
-        }
-        touchedKeyElement = null; // Reset tracker
+        touchedKeyElement = null;
     }
 }
 
 function handleKeyboardTouchCancel(event) {
     if (touchedKeyElement) {
         touchedKeyElement.classList.remove('key-pressed-visual');
-        touchedKeyElement = null; // Reset tracker
+        touchedKeyElement = null;
     }
 }
 
@@ -755,11 +801,12 @@ function handleVirtualKeyboardClick(event) {
         if (!lastFocusedCell) return;
     }
 
+    console.log('handleVirtualKeyboardClick', key);
     if (key === 'Enter') {
         focusNextCell();
     } else if (key === '⌫') { // Backspace
         handleBackspace();
-    } else if (key.length === 1 && key >= 'A' && key <= 'Z') { // Letter key
+    } else if (key.length === 1 && key >= 'A' && key <= 'Z') {
         lastFocusedCell.value = key;
         checkSolutionAttempt();
         focusNextCell();
@@ -795,6 +842,10 @@ function handleGridKeyDown(event) {
             event.preventDefault();
             handleBackspace();
         }
+    } else if (event.key >= 'a' && event.key <= 'z') {
+        lastFocusedCell.value = event.key.toUpperCase();
+        checkSolutionAttempt();
+        focusNextCell();
     }
 
     populateWordList();
@@ -808,17 +859,12 @@ function toggleNativeKeyboard(isEnabled) {
 
     inputCells.forEach(cell => {
         if (useNativeKeyboard) {
-            // Allow native keyboard: remove the inputmode attribute
             cell.removeAttribute('inputmode');
-            // Optional: Reset cursor if you changed it in CSS
-            // cell.style.cursor = '';
         } else {
             // Suppress native keyboard
             cell.inputMode = 'none';
-            // Optional: Set cursor if using CSS cue
-            // cell.style.cursor = 'default';
 
-            // *** Crucial for iOS Safari ***
+            // Safari Workaround
             // Setting readOnly briefly and removing it can help
             // ensure the keyboard is dismissed if it was somehow shown.
             cell.readOnly = true;
@@ -826,12 +872,9 @@ function toggleNativeKeyboard(isEnabled) {
         }
     });
 
-    // Optional: If a cell is focused, blur and re-focus to apply change immediately
     if (document.activeElement && document.activeElement.matches('.cell-unknown')) {
         const currentFocus = document.activeElement;
         currentFocus.blur();
-        // Re-focus might bring up keyboard if enabled, which is desired
-        // Use timeout to ensure blur completes
         setTimeout(() => currentFocus.focus(), 0);
     }
 
