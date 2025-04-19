@@ -308,8 +308,8 @@ function generateGrid() {
     for (let row = 0; row < puzzle.gridSize.rows; row++) {
         for (let col = 0; col < puzzle.gridSize.cols; col++) {
             const key = `${row}-${col}`;
-            const cellDef = layoutMap.get(key); // Get the definition for this coordinate, if any
-            let cellElement = null; // Initialize cellElement
+            const cellDef = layoutMap.get(key);
+            let cellElement = null;
 
             if (cellDef) {
                 if (cellDef.type === 1) { // Type 1: Unknown (Editable Input)
@@ -327,7 +327,7 @@ function generateGrid() {
                 } else if (cellDef.type === 2) { // Type 2: Root Word Cell (Display Div)
                     cellElement = document.createElement('div');
                     cellElement.classList.add('grid-cell', 'cell-root');
-                    cellElement.textContent = cellDef.char || ''; // Display the character
+                    cellElement.textContent = cellDef.char || '';
 
                     cellElement.dataset.row = row;
                     cellElement.dataset.col = col;
@@ -336,8 +336,8 @@ function generateGrid() {
 
                 } else if (cellDef.type === 3) { // Type 3: Pre-filled Unknown Cell (Display Div)
                     cellElement = document.createElement('div');
-                    cellElement.classList.add('grid-cell', 'cell-prefilled-unknown'); // Use specific class
-                    cellElement.textContent = cellDef.char || ''; // Display the character
+                    cellElement.classList.add('grid-cell', 'cell-prefilled-unknown');
+                    cellElement.textContent = cellDef.char || '';
 
                     cellElement.dataset.row = row;
                     cellElement.dataset.col = col;
@@ -377,7 +377,7 @@ function generateGrid() {
 function populateWordList() {
     const wordListDiv = document.getElementById('wordList');
     const easyModeCheckbox = document.getElementById('easyModeCheckbox');
-    wordListDiv.innerHTML = ''; // Clear previous list
+    wordListDiv.innerHTML = '';
 
     if (!puzzle || !dictionaryWords || !easyModeCheckbox || !easyModeCheckbox.checked) {
         wordListDiv.innerHTML = ''; // Ensure it's clear if easy mode is off
@@ -440,13 +440,10 @@ function populateWordList() {
             [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
         }
 
-        // Take 4 random candidates + the correct word
         displayWords = candidates.slice(0, 4);
         if (correctWordInSuggestions) {
              displayWords.push(correctWord);
         } else if (displayWords.length < 5) {
-            // If correct word wasn't valid (e.g., user typed something impossible)
-            // and we have space, add another random suggestion if available
              if(candidates.length > 4) displayWords.push(candidates[4]);
         }
 
@@ -468,9 +465,8 @@ function populateWordList() {
     } else {
         displayWords.forEach(word => {
             const span = document.createElement('span');
-            span.textContent = word.toUpperCase(); // Ensure consistency
+            span.textContent = word.toUpperCase();
             span.onclick = () => {
-                // We need a function to fill the word based on orientation
                 fillColumnWithWord(word.toUpperCase(), wordInfo);
             };
             wordListDiv.appendChild(span);
@@ -492,7 +488,6 @@ function fillColumnWithWord(word) {
 
     if (!unknownDef) {
         console.error(`Could not find unknown word definition for column ${targetCol}.`);
-        alert("Internal error: Puzzle definition missing for this column.");
         return;
     }
 
@@ -512,7 +507,6 @@ function fillColumnWithWord(word) {
         if (!cellElement || cellElement.classList.contains('cell-empty')) {
             // This should not happen if the puzzle layout is correct
             console.error(`Error placing word "${wordUpper}": No valid cell found at [${targetRow}, ${targetCol}] for letter index ${letterIdx}.`);
-            alert(`Internal error: Grid layout mismatch for word "${wordUpper}".`);
             fillSuccessful = false;
             break;
         }
@@ -525,7 +519,6 @@ function fillColumnWithWord(word) {
             const existingChar = (cellElement.textContent || '').toUpperCase();
             if (existingChar !== expectedChar) {
                  console.warn(`Word "${wordUpper}" conflicts with pre-filled cell at [${targetRow}, ${targetCol}]. Expected "${expectedChar}", found "${existingChar}".`);
-                 alert(`Word "${wordUpper}" cannot be placed here because it conflicts with a pre-filled letter ('${existingChar}').`);
                  fillSuccessful = false;
                  break;
             }
