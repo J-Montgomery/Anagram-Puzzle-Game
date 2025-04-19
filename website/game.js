@@ -18,7 +18,7 @@ window.onclick = function(event) {
 
 function toggleEasyMode(isEasy) {
     const possibleWordsDiv = document.getElementById('possibleWords');
-    if (!possibleWordsDiv || !puzzle) return; // Added check for puzzle existence
+    if (!possibleWordsDiv || !puzzle) return;
 
     possibleWordsDiv.classList.toggle('visible', isEasy);
 
@@ -120,25 +120,23 @@ function getWordInfoFromCell(cellElement, puzzle) {
         return null;
     }
 
-    // Check if it's the base word (horizontal)
     if (row === puzzle.baseRowInGrid && col >= 0 && col < puzzle.solutionWords[0].length) {
         const word = puzzle.solutionWords[0].toUpperCase();
         const cells = [];
         for (let i = 0; i < word.length; i++) {
-            cells.push(getGridCellElement(row, i)); // Need a helper to get cell DOM element
+            cells.push(getGridCellElement(row, i));
         }
         return {
             wordIndex: 0,
             word: word,
             orientation: 'horizontal',
             length: word.length,
-            cells: cells.filter(c => c != null), // Filter out potentially missing cells
+            cells: cells.filter(c => c != null),
             startRow: row,
             startCol: 0
         };
     }
 
-    // Check if it's an unknown word (vertical)
     // Iterate through unknowns (solutionWords index 1 onwards)
     for (let i = 0; i < puzzle.unknowns.length; i++) {
         const unknownDef = puzzle.unknowns[i];
@@ -169,16 +167,9 @@ function getWordInfoFromCell(cellElement, puzzle) {
         }
     }
 
-    // Cell is not part of any defined word
     return null;
 }
 
-/**
- * Helper to get the DOM element for a specific grid cell.
- * @param {number} row
- * @param {number} col
- * @returns {HTMLElement|null}
- */
 function getGridCellElement(row, col) {
     return document.querySelector(`.grid-container .grid-cell[data-row="${row}"][data-col="${col}"]`);
 }
@@ -202,7 +193,6 @@ function loadPuzzleData() {
         const jsonString = puzzleDataElement.textContent;
         const rawPuzzleData = JSON.parse(jsonString);
 
-        // --- Basic Validation ---
         if (!rawPuzzleData.baseWord || !rawPuzzleData.clue || !rawPuzzleData.solutionSentence || !rawPuzzleData.unknowns || !rawPuzzleData.anagrams) {
             console.error('Puzzle data is incomplete.');
             return false;
@@ -211,11 +201,10 @@ function loadPuzzleData() {
         const baseWord = rawPuzzleData.baseWord.toUpperCase();
         const unknowns = rawPuzzleData.unknowns;
 
-        // --- Sanity Checks & Layout Calculation ---
         let minRow = 0;
         let maxRow = 0;
         const generatedLayout = [];
-        const solutionWords = [baseWord]; // Base word is always index 0
+        const solutionWords = [baseWord];
 
         // Determine vertical bounds based on unknowns
         unknowns.forEach((unknown, index) => {
@@ -223,7 +212,7 @@ function loadPuzzleData() {
             const col = unknown.columnIndex;
             const overlap = unknown.overlapIndex;
 
-            // Sanity checks (keep these as they are)
+            // Sanity checks
             if (col < 0 || col >= baseWord.length) { throw new Error(`Invalid columnIndex ${col} for word "${word}". Must be between 0 and ${baseWord.length - 1}.`); }
             if (overlap < 0 || overlap >= word.length) { throw new Error(`Invalid overlapIndex ${overlap} for word "${word}". Must be between 0 and ${word.length - 1}.`); }
             if (word[overlap] !== baseWord[col]) { throw new Error(`Character mismatch for word "${word}" at columnIndex ${col}. Expected "${baseWord[col]}", got "${word[overlap]}".`); }
@@ -235,33 +224,28 @@ function loadPuzzleData() {
             solutionWords.push(word);
         });
 
-        // --- Calculate Final Grid Dimensions and Base Row Offset ---
         const gridCols = baseWord.length;
         const gridRows = maxRow - minRow + 1;
         const baseRowInGrid = 0 - minRow;
 
-        // --- Generate Layout for Base Word (Word Index 0) ---
         for (let i = 0; i < baseWord.length; i++) {
             generatedLayout.push({
-                type: 2, // Root word type
+                type: 2,
                 coord: [baseRowInGrid, i],
                 char: baseWord[i],
-                wordIndex: 0, // Base word index
+                wordIndex: 0,
                 letterIndex: i
             });
         }
 
-        // --- Generate Layout for Unknown Words (Word Index 1 onwards) ---
         unknowns.forEach((unknownDef, index) => {
             const word = unknownDef.word.toUpperCase();
             const col = unknownDef.columnIndex;
             const overlap = unknownDef.overlapIndex;
             const wordIndex = index + 1;
-            // Get prefilled indices, default to empty array if not provided
             const prefilled = unknownDef.prefilledIndices || [];
 
             for (let letterIdx = 0; letterIdx < word.length; letterIdx++) {
-                // Skip the overlap letter (handled by base word)
                 if (letterIdx === overlap) {
                     continue;
                 }
@@ -277,13 +261,12 @@ function loadPuzzleData() {
                     layoutEntry.type = 3;
                     layoutEntry.char = word[letterIdx];
                 } else {
-                    layoutEntry.type = 1; // Standard unknown type
+                    layoutEntry.type = 1;
                 }
                 generatedLayout.push(layoutEntry);
             }
         });
 
-        // --- Store processed data ---
         puzzle = {
             ...rawPuzzleData,
             baseWord: baseWord,
@@ -303,7 +286,6 @@ function loadPuzzleData() {
 }
 
 function generateGrid() {
-    // Ensure puzzle data is loaded and valid
     if (!puzzle || !puzzle.gridSize || !puzzle.layout || !puzzle.baseRowInGrid === undefined) {
         console.error("Cannot generate grid: Puzzle data not processed correctly or missing baseRowInGrid.");
         const container = document.getElementById('gridContainer');
@@ -312,16 +294,13 @@ function generateGrid() {
     }
 
     const container = document.getElementById('gridContainer');
-    container.innerHTML = ''; // Clear previous grid content
+    container.innerHTML = '';
     container.style.gridTemplateColumns = `repeat(${puzzle.gridSize.cols}, 40px)`;
     container.style.gridTemplateRows = `repeat(${puzzle.gridSize.rows}, 40px)`;
 
-    // Create a map for quick lookup of layout cells by coordinate "row-col"
     const layoutMap = new Map();
     puzzle.layout.forEach(cellDef => {
         const key = `${cellDef.coord[0]}-${cellDef.coord[1]}`;
-        // If multiple definitions exist for a coordinate (shouldn't happen with current logic),
-        // the last one processed will overwrite previous ones.
         layoutMap.set(key, cellDef);
     });
 
@@ -373,7 +352,6 @@ function generateGrid() {
                 }
 
             } else {
-                // No definition for this coordinate - it's an empty background cell
                 cellElement = document.createElement('div');
                 cellElement.classList.add('grid-cell', 'cell-empty');
             }
@@ -418,18 +396,16 @@ function populateWordList() {
         return;
     }
 
-    // --- Filtering Logic ---
     const targetLength = wordInfo.length;
     const correctWord = wordInfo.word.toUpperCase();
     let suggestions = [];
 
-    // Get current letters from the grid for this word
     const currentGridLetters = wordInfo.cells.map(cell => {
-        if (!cell) return null; // Should not happen if getWordInfoFromCell is correct
+        if (!cell) return null;
         if (cell.tagName === 'INPUT') {
-            return cell.value.toUpperCase() || null; // null represents an empty unknown
+            return cell.value.toUpperCase() || null;
         } else {
-            return cell.textContent.toUpperCase() || null; // Root or prefilled
+            return cell.textContent.toUpperCase() || null;
         }
     });
 
@@ -438,42 +414,27 @@ function populateWordList() {
         return;
     }
 
-    // Filter dictionaryWords
     suggestions = dictionaryWords.filter(dictWord => {
         const upperDictWord = dictWord.toUpperCase();
-        // 1. Check length
         if (upperDictWord.length !== targetLength) {
             return false;
         }
 
-        // 2. Check against letters currently in the grid
         for (let i = 0; i < targetLength; i++) {
             const gridLetter = currentGridLetters[i];
             if (gridLetter && gridLetter !== upperDictWord[i]) {
-                // If there's a letter in the grid and it doesn't match, reject word
                 return false;
             }
-            // If gridLetter is null (empty input), it matches anything, so continue
         }
 
-        // 3. (Implicit) Check against base word intersection & prefilled (handled by step 2)
-        //    Because currentGridLetters reads directly from the grid cells (which include root/prefilled),
-        //    any dictionary word suggested must already match those fixed letters.
-
-        // 4. (Implicit) Check if it's a partial anagram (handled by initial dictionary loading)
-        //    All words in dictionaryWords are already partial anagrams.
-
-        return true; // Word passed all checks
+        return true;
     });
 
-    // --- Sampling Logic ---
     let displayWords = [];
     if (suggestions.length > 5) {
-        // Ensure the correct word is included
         const correctWordInSuggestions = suggestions.includes(correctWord);
-        let candidates = suggestions.filter(w => w !== correctWord); // Remove correct word for random sampling
+        let candidates = suggestions.filter(w => w !== correctWord);
 
-        // Shuffle candidates
         for (let i = candidates.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
@@ -481,7 +442,7 @@ function populateWordList() {
 
         // Take 4 random candidates + the correct word
         displayWords = candidates.slice(0, 4);
-        if (correctWordInSuggestions) { // Only add it back if it was a valid suggestion initially
+        if (correctWordInSuggestions) {
              displayWords.push(correctWord);
         } else if (displayWords.length < 5) {
             // If correct word wasn't valid (e.g., user typed something impossible)
@@ -489,25 +450,19 @@ function populateWordList() {
              if(candidates.length > 4) displayWords.push(candidates[4]);
         }
 
-
-        // Shuffle the final list of 5 so correct answer isn't obvious
          for (let i = displayWords.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [displayWords[i], displayWords[j]] = [displayWords[j], displayWords[i]];
         }
 
     } else {
-        // Less than or equal to 5 suggestions, show them all
         displayWords = suggestions;
-         // Optional: shuffle even small lists
          for (let i = displayWords.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [displayWords[i], displayWords[j]] = [displayWords[j], displayWords[i]];
         }
     }
 
-
-    // --- Display Logic ---
     if (displayWords.length === 0) {
         wordListDiv.innerHTML = '<i>No matching words found.</i>';
     } else {
@@ -605,7 +560,7 @@ function checkSolutionAttempt() {
                 targetRow = puzzle.baseRowInGrid;
                 targetCol = letterIdx;
             } else { // Unknown word (index 1+)
-                const unknownDef = puzzle.unknowns[wordIdx - 1]; // Get definition from original input
+                const unknownDef = puzzle.unknowns[wordIdx - 1];
                 const overlapIndex = unknownDef.overlapIndex;
                 targetCol = unknownDef.columnIndex;
                 targetRow = puzzle.baseRowInGrid + (letterIdx - overlapIndex);
@@ -618,7 +573,6 @@ function checkSolutionAttempt() {
                 if (cellElement.tagName === 'INPUT') {
                     char = (cellElement.value || '').toUpperCase();
                 } else {
-                    // Includes root cells (divs) and potentially prefilled (divs)
                     char = (cellElement.textContent || '').toUpperCase();
                 }
             } else {
@@ -627,7 +581,6 @@ function checkSolutionAttempt() {
             enteredWord += char;
         }
 
-        // Compare the reconstructed word with the expected word
         if (enteredWord !== expectedWord) {
             allWordsCorrect = false;
             break;
