@@ -318,3 +318,29 @@ ul.dashed > li:before {
     min-width: 50px;
     flex-grow: 2;
 }
+
+/* --- Next Puzzle Arrow --- */
+#nextPuzzleLink {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3em;
+    color: var(--solution-text);
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+
+    text-decoration: none;
+}
+
+#nextPuzzleLink.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+#nextPuzzleLink #nextPuzzleArrowContent span {
+    display: block;
+}

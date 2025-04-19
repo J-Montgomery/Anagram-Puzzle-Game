@@ -536,6 +536,7 @@ function checkSolutionAttempt() {
     if (!puzzle) return;
 
     const solutionDisplay = document.getElementById('solutionDisplay');
+    const nextArrow = document.getElementById('nextPuzzleLink');
     let allWordsCorrect = true;
     const expectedWords = puzzle.solutionWords;
 
@@ -581,9 +582,19 @@ function checkSolutionAttempt() {
         if (solutionFadeOutTimeoutId) { clearTimeout(solutionFadeOutTimeoutId); solutionFadeOutTimeoutId = null; }
         solutionDisplay.textContent = puzzle.solutionSentence;
         solutionDisplay.style.opacity = 1;
+        solutionDisplay.style.visibility = 'visible';
+
+        if (nextArrow) {
+            nextArrow.classList.add('visible');
+        }
         console.log('Solution is correct!');
     } else {
         if (solutionDisplay.textContent !== '') {
+            if (nextArrow) {
+                nextArrow.classList.remove('visible');
+            }
+
+            solutionDisplay.style.visibility = 'hidden';
             solutionDisplay.style.opacity = 0;
             if (solutionFadeOutTimeoutId) { clearTimeout(solutionFadeOutTimeoutId); }
             solutionFadeOutTimeoutId = setTimeout(() => {
