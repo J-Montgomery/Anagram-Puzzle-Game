@@ -162,6 +162,20 @@ ul.dashed > li:before {
     background-color: var(--prefilled-bg);
     color: var(--text-color);
 }
+
+.cell-prefilled-unknown {
+    background-color: var(--prefilled-bg); /* Use #4c5255 */
+    color: var(--text-color);
+    /* Ensure alignment and font match other cells */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    user-select: none; /* Not selectable like input */
+}
+
 .cell-empty {
     background-color: transparent; /* Same as body background */
     pointer-events: none; /* Not interactive */

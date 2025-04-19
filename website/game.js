@@ -97,26 +97,36 @@ function loadPuzzleData() {
         }
 
         // --- Generate Layout for Unknown Words (Word Index 1 onwards) ---
-        unknowns.forEach((unknown, index) => {
-            const word = unknown.word.toUpperCase();
-            const col = unknown.columnIndex;
-            const overlap = unknown.overlapIndex;
-            const wordIndex = index + 1; // Unknown words start from index 1
+        unknowns.forEach((unknownDef, index) => {
+            const word = unknownDef.word.toUpperCase();
+            const col = unknownDef.columnIndex;
+            const overlap = unknownDef.overlapIndex;
+            const wordIndex = index + 1;
+            // Get prefilled indices, default to empty array if not provided
+            const prefilled = unknownDef.prefilledIndices || [];
 
             for (let letterIdx = 0; letterIdx < word.length; letterIdx++) {
-                // *** FIX: Only add layout entry if NOT the overlap letter ***
-                if (letterIdx !== overlap) {
-                    const rowInGrid = baseRowInGrid + (letterIdx - overlap);
-                    generatedLayout.push({
-                        type: 1, // Unknown word type
-                        coord: [rowInGrid, col],
-                        // char: word[letterIdx], // Don't prefill unknowns
-                        wordIndex: wordIndex,
-                        letterIndex: letterIdx
-                    });
+                // Skip the overlap letter (handled by base word)
+                if (letterIdx === overlap) {
+                    continue;
                 }
-                // If letterIdx === overlap, we simply skip adding an entry.
-                // The base word's entry at this coordinate will be used by generateGrid.
+
+                const rowInGrid = baseRowInGrid + (letterIdx - overlap);
+                const layoutEntry = {
+                    coord: [rowInGrid, col],
+                    wordIndex: wordIndex,
+                    letterIndex: letterIdx
+                };
+
+                // *** NEW: Check if this index should be pre-filled ***
+                if (prefilled.includes(letterIdx)) {
+                    layoutEntry.type = 3; // Assign new type for pre-filled unknown
+                    layoutEntry.char = word[letterIdx]; // Add the character
+                } else {
+                    layoutEntry.type = 1; // Standard unknown type
+                    // No char needed for type 1
+                }
+                generatedLayout.push(layoutEntry);
             }
         });
 
@@ -140,72 +150,108 @@ function loadPuzzleData() {
 }
 
 function generateGrid() {
-    if (!puzzle || !puzzle.gridSize || !puzzle.layout) {
-        console.error("Cannot generate grid: Puzzle data not processed correctly.");
+    // Ensure puzzle data is loaded and valid
+    if (!puzzle || !puzzle.gridSize || !puzzle.layout || !puzzle.baseRowInGrid === undefined) {
+        console.error("Cannot generate grid: Puzzle data not processed correctly or missing baseRowInGrid.");
+        const container = document.getElementById('gridContainer');
+        if(container) container.innerHTML = '<p style="color: red;">Error loading puzzle grid.</p>';
         return;
     }
+
     const container = document.getElementById('gridContainer');
-    container.innerHTML = ''; // Clear previous grid
+    container.innerHTML = ''; // Clear previous grid content
     container.style.gridTemplateColumns = `repeat(${puzzle.gridSize.cols}, 40px)`;
     container.style.gridTemplateRows = `repeat(${puzzle.gridSize.rows}, 40px)`;
 
-    // Create a map for quick lookup of layout cells by coordinate
+    // Create a map for quick lookup of layout cells by coordinate "row-col"
     const layoutMap = new Map();
     puzzle.layout.forEach(cellDef => {
         const key = `${cellDef.coord[0]}-${cellDef.coord[1]}`;
+        // If multiple definitions exist for a coordinate (shouldn't happen with current logic),
+        // the last one processed will overwrite previous ones.
         layoutMap.set(key, cellDef);
     });
 
-    // Create grid elements based on calculated dimensions
+    // Create grid cell elements based on calculated dimensions and layoutMap
     for (let r = 0; r < puzzle.gridSize.rows; r++) {
         for (let c = 0; c < puzzle.gridSize.cols; c++) {
             const key = `${r}-${c}`;
-            const cellDef = layoutMap.get(key);
-            let cellElement;
+            const cellDef = layoutMap.get(key); // Get the definition for this coordinate, if any
+            let cellElement = null; // Initialize cellElement
 
             if (cellDef) {
-                if (cellDef.type === 1) { // Unknown
+                // Cell has a definition in the layout
+                if (cellDef.type === 1) { // Type 1: Unknown (Editable Input)
                     cellElement = document.createElement('input');
                     cellElement.type = 'text';
                     cellElement.maxLength = 1;
                     cellElement.classList.add('grid-cell', 'cell-unknown');
+                    // Add data attributes for identification and logic
                     cellElement.dataset.row = r;
                     cellElement.dataset.col = c;
                     cellElement.dataset.wordIndex = cellDef.wordIndex;
                     cellElement.dataset.letterIndex = cellDef.letterIndex;
-                } else { // Root (type 2) or potentially Prefilled (type 3 - if added later)
+                    // Ensure value is uppercase (can also be done on input event)
+                    cellElement.style.textTransform = 'uppercase';
+
+                } else if (cellDef.type === 2) { // Type 2: Root Word Cell (Display Div)
                     cellElement = document.createElement('div');
-                    cellElement.classList.add('grid-cell');
-                    cellElement.textContent = cellDef.char || '';
-                    if (cellDef.type === 2) {
-                        cellElement.classList.add('cell-root');
-                    }
-                    // Add data attributes for consistency if needed by other logic
-                    cellElement.dataset.row = r; // *** ADD THIS ***
-                    cellElement.dataset.col = c; // *** ADD THIS ***
+                    cellElement.classList.add('grid-cell', 'cell-root');
+                    cellElement.textContent = cellDef.char || ''; // Display the character
+                    // Add data attributes for validation and potential interaction
+                    cellElement.dataset.row = r;
+                    cellElement.dataset.col = c;
                     cellElement.dataset.wordIndex = cellDef.wordIndex;
                     cellElement.dataset.letterIndex = cellDef.letterIndex;
+
+                } else if (cellDef.type === 3) { // Type 3: Pre-filled Unknown Cell (Display Div)
+                    cellElement = document.createElement('div');
+                    cellElement.classList.add('grid-cell', 'cell-prefilled-unknown'); // Use specific class
+                    cellElement.textContent = cellDef.char || ''; // Display the character
+                    // Add data attributes for validation
+                    cellElement.dataset.row = r;
+                    cellElement.dataset.col = c;
+                    cellElement.dataset.wordIndex = cellDef.wordIndex;
+                    cellElement.dataset.letterIndex = cellDef.letterIndex;
+
+                } else {
+                    // Handle potential unknown types or fallback
+                    console.warn(`Unknown cell type ${cellDef.type} at [${r}, ${c}]. Rendering as empty.`);
+                    cellElement = document.createElement('div');
+                    cellElement.classList.add('grid-cell', 'cell-empty');
                 }
-            } else { // Empty
+
+            } else {
+                // No definition for this coordinate - it's an empty background cell
                 cellElement = document.createElement('div');
                 cellElement.classList.add('grid-cell', 'cell-empty');
+                // No data attributes needed for purely empty cells
             }
-            container.appendChild(cellElement);
-        }
-    }
 
+            // Append the created cell element to the container
+            if (cellElement) {
+                 container.appendChild(cellElement);
+            }
+        } // End column loop
+    } // End row loop
+
+    // Remove existing listeners before adding new ones (prevents duplicates on potential re-renders)
+    // Note: This requires storing references or using anonymous functions carefully.
+    // A simpler approach for this example is just adding them, assuming generateGrid is called once on load.
+    // If re-rendering, proper listener cleanup is crucial.
+
+    // Add event listeners to the container using event delegation
     container.addEventListener('focusin', (event) => {
         if (event.target.matches('.cell-unknown')) {
-            lastFocusedCell = event.target; // Update tracker
+            lastFocusedCell = event.target; // Update tracker when an input cell gains focus
         }
     });
 
-    // Add listener for input events (modified later)
-    container.addEventListener('input', handleGridInput);
+    container.addEventListener('input', handleGridInput); // Handle character input
 
-    // Add listener for keydown events within the grid (for Tab, Backspace, Enter)
-    container.addEventListener('keydown', handleGridKeyDown);
+    container.addEventListener('keydown', handleGridKeyDown); // Handle Tab, Enter, Backspace
 }
+
 
 // --- Easy Mode Word List Population (Example) ---
 function populateWordList(words) {
@@ -242,73 +288,86 @@ function populateWordList(words) {
 }
 
 function fillColumnWithWord(word) {
-    if (!lastFocusedCell) {
-        alert("Please click on a cell in the column you want to fill first.");
+    if (!lastFocusedCell || !lastFocusedCell.matches('.cell-unknown')) {
+        // Ensure focus is actually on an input cell before proceeding
+        alert("Please click on an input cell in the column you want to fill first.");
         return;
     }
-    if (!word) return;
+    if (!word || !puzzle || !puzzle.unknowns) return; // Basic safety checks
 
-    const targetCol = lastFocusedCell.dataset.col;
+    const targetCol = parseInt(lastFocusedCell.dataset.col);
+    const wordUpper = word.toUpperCase(); // Ensure comparison is case-insensitive
 
-    // Find all input cells in the target column
-    const columnCells = document.querySelectorAll(`.grid-cell.cell-unknown[data-col="${targetCol}"]`);
+    // Find the definition for the unknown word in this column
+    // Note: Assumes only one unknown word per column for simplicity.
+    // If multiple words could share a column, this needs adjustment.
+    const unknownDef = puzzle.unknowns.find(u => u.columnIndex === targetCol);
 
-    // Sort them by row index to ensure top-to-bottom order
-    const sortedCells = Array.from(columnCells).sort((a, b) =>
-        parseInt(a.dataset.row) - parseInt(b.dataset.row)
-    );
+    if (!unknownDef) {
+        console.error(`Could not find unknown word definition for column ${targetCol}.`);
+        alert("Internal error: Puzzle definition missing for this column.");
+        return;
+    }
 
-    // Check if the number of cells matches the word length
-    // This is a basic check; more sophisticated filtering might be needed
-    // depending on how easy mode suggestions are generated.
-    if (sortedCells.length !== word.length) {
-         // Find the cell corresponding to the overlap index for this column
-         const unknownDef = puzzle.unknowns.find(u => u.columnIndex == targetCol);
-         const overlapRow = unknownDef ? puzzle.baseRowInGrid + (unknownDef.overlapIndex - unknownDef.overlapIndex) : -1; // This simplifies to baseRowInGrid
-         const overlapCell = document.querySelector(`.grid-cell.cell-root[data-row="${puzzle.baseRowInGrid}"][data-col="${targetCol}"]`);
-
-         // We need to account for the overlapping letter which is NOT an input
-         if (overlapCell && sortedCells.length === word.length -1) {
-            // This is the expected case: word length is one more than input cells
-            let letterIndex = 0;
-            for(let i = 0; i < word.length; i++) {
-                const expectedRow = puzzle.baseRowInGrid + (i - unknownDef.overlapIndex);
-                if (expectedRow === puzzle.baseRowInGrid) {
-                    // This is the overlap position, skip assigning to input
-                    continue;
-                }
-                // Find the corresponding input cell (should exist)
-                const targetCell = sortedCells[letterIndex];
-                if (targetCell) {
-                     targetCell.value = word[i];
-                     letterIndex++;
-                } else {
-                    console.warn(`Mismatch: Expected input cell for letter ${word[i]} not found.`);
-                    break; // Stop filling if something is wrong
-                }
-            }
-         } else {
-            alert(`Word "${word}" (${word.length} letters) doesn't fit the number of available input cells (${sortedCells.length}) in this column.`);
-            return;
-         }
-
-    } else {
-         // Fallback/alternative: If word length EXACTLY matches input cells (no overlap?)
-         // This case might indicate an issue with puzzle definition or logic.
-         console.warn("Word length matches input cell count directly. Check puzzle definition for column", targetCol);
-         sortedCells.forEach((cell, index) => {
-             if (index < word.length) {
-                 cell.value = word[index];
-             }
-         });
+    // Check if the clicked word's length matches the expected length from the definition
+    if (wordUpper.length !== unknownDef.word.length) {
+         alert(`Word "${wordUpper}" (${wordUpper.length} letters) does not match the expected length (${unknownDef.word.length} letters) for this column.`);
+         return;
     }
 
 
-    // Trigger solution check after filling
-    checkSolutionAttempt();
+    let fillSuccessful = true; // Flag to track if filling works
 
-    // Optional: Move focus after filling
-    focusNextCell(); // Or focus the start of the next column, etc.
+    // Iterate through each letter index of the word to be placed
+    for (let letterIdx = 0; letterIdx < wordUpper.length; letterIdx++) {
+        // Calculate the target row in the grid for this letter
+        const targetRow = puzzle.baseRowInGrid + (letterIdx - unknownDef.overlapIndex);
+
+        // Find the specific cell element at the calculated coordinate
+        const cellElement = document.querySelector(`.grid-container .grid-cell[data-row="${targetRow}"][data-col="${targetCol}"]`);
+
+        if (!cellElement || cellElement.classList.contains('cell-empty')) {
+            // This should not happen if the puzzle layout is correct
+            console.error(`Error placing word "${wordUpper}": No valid cell found at [${targetRow}, ${targetCol}] for letter index ${letterIdx}.`);
+            alert(`Internal error: Grid layout mismatch for word "${wordUpper}".`);
+            fillSuccessful = false;
+            break; // Stop trying to fill this word
+        }
+
+        const expectedChar = wordUpper[letterIdx];
+
+        // Check the type of cell found
+        if (cellElement.matches('.cell-unknown')) {
+            // It's an input cell, fill it
+            cellElement.value = expectedChar;
+        } else if (cellElement.matches('.cell-root') || cellElement.matches('.cell-prefilled-unknown')) {
+            // It's a pre-filled div (root overlap or pre-filled unknown)
+            // Verify the existing character matches the word being placed
+            const existingChar = (cellElement.textContent || '').toUpperCase();
+            if (existingChar !== expectedChar) {
+                // This suggests the clicked easy mode word is incorrect for the current puzzle state
+                 console.warn(`Word "${wordUpper}" conflicts with pre-filled cell at [${targetRow}, ${targetCol}]. Expected "${expectedChar}", found "${existingChar}".`);
+                 alert(`Word "${wordUpper}" cannot be placed here because it conflicts with a pre-filled letter ('${existingChar}').`);
+                 fillSuccessful = false;
+                 // Optional: Clear any inputs already filled for this attempt?
+                 // (Could add logic here to revert changes made in this loop if needed)
+                 break; // Stop filling
+            }
+            // If characters match, do nothing - the cell is already correctly filled.
+        } else {
+            // Should not happen if querySelector is specific enough
+            console.error(`Error placing word "${wordUpper}": Unexpected cell type found at [${targetRow}, ${targetCol}].`);
+            fillSuccessful = false;
+            break;
+        }
+    } // End loop through letters
+
+    // Trigger solution check only if the fill attempt wasn't aborted
+    if (fillSuccessful) {
+        checkSolutionAttempt();
+        // Optional: Move focus after successful fill
+        focusNextCell();
+    }
 }
 
 function checkSolutionAttempt() {
