@@ -33,6 +33,8 @@ function toggleEasyMode(isEasy) {
 }
 
 let puzzle;
+let lastFocusedCell = null;
+let solutionFadeOutTimeoutId = null;
 
 function loadPuzzleData() {
     const puzzleDataElement = document.getElementById('puzzle-data');
@@ -191,6 +193,18 @@ function generateGrid() {
             container.appendChild(cellElement);
         }
     }
+
+    container.addEventListener('focusin', (event) => {
+        if (event.target.matches('.cell-unknown')) {
+            lastFocusedCell = event.target; // Update tracker
+        }
+    });
+
+    // Add listener for input events (modified later)
+    container.addEventListener('input', handleGridInput);
+
+    // Add listener for keydown events within the grid (for Tab, Backspace, Enter)
+    container.addEventListener('keydown', handleGridKeyDown);
 }
 
 // --- Easy Mode Word List Population (Example) ---
@@ -211,8 +225,6 @@ function populateWordList(words) {
          wordListDiv.innerHTML = '<i>Select a column or type to see suggestions.</i>';
      }
 }
-
-let solutionFadeOutTimeoutId = null;
 
 function checkSolutionAttempt() {
     if (!puzzle) return;
@@ -287,6 +299,138 @@ function checkSolutionAttempt() {
     }
 }
 
+function focusNextCell() {
+    if (!lastFocusedCell || !puzzle) return;
+
+    const currentCell = lastFocusedCell;
+    const currentRow = parseInt(currentCell.dataset.row);
+    const currentCol = parseInt(currentCell.dataset.col);
+
+    // 1. Try finding next cell down in the same column
+    for (let r = currentRow + 1; r < puzzle.gridSize.rows; r++) {
+        const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${currentCol}"]`);
+        if (nextCell) {
+            nextCell.focus();
+            // nextCell.select(); // Optional: select text in next cell
+            return; // Found and focused
+        }
+    }
+
+    // 2. Try finding the first cell in the next columns to the right
+    for (let c = currentCol + 1; c < puzzle.gridSize.cols; c++) {
+        for (let r = 0; r < puzzle.gridSize.rows; r++) { // Check all rows in the next column
+            const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
+            if (nextCell) {
+                nextCell.focus();
+                // nextCell.select(); // Optional
+                return; // Found and focused
+            }
+        }
+    }
+
+    // 3. If no cell found (e.g., at the very last input), do nothing
+}
+
+function handleBackspace() {
+    if (!lastFocusedCell) return;
+
+    const currentCell = lastFocusedCell;
+    const currentRow = parseInt(currentCell.dataset.row);
+    const currentCol = parseInt(currentCell.dataset.col);
+
+    // If cell has content, just clear it (don't move focus yet)
+    if (currentCell.value !== '') {
+        currentCell.value = '';
+        checkSolutionAttempt(); // Re-check solution after clearing
+        return;
+    }
+
+    // If cell is already empty, move focus backward
+
+    // 1. Try finding previous cell up in the same column
+    for (let r = currentRow - 1; r >= 0; r--) {
+        const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${currentCol}"]`);
+        if (prevCell) {
+            prevCell.focus();
+            // prevCell.select(); // Optional
+            return; // Found and focused
+        }
+    }
+
+    // 2. Try finding the last cell in the previous columns to the left
+    for (let c = currentCol - 1; c >= 0; c--) {
+        for (let r = puzzle.gridSize.rows - 1; r >= 0; r--) { // Check rows bottom-up
+            const prevCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
+            if (prevCell) {
+                prevCell.focus();
+                // prevCell.select(); // Optional
+                return; // Found and focused
+            }
+        }
+    }
+    // If no previous cell, do nothing
+}
+
+function handleVirtualKeyboardClick(event) {
+    if (!event.target.matches('.key')) return; // Ignore clicks not on keys
+
+    const key = event.target.textContent;
+
+    if (!lastFocusedCell) {
+        // Maybe focus the first input cell if none is selected?
+        const firstInput = document.querySelector('.grid-cell.cell-unknown');
+        if (firstInput) firstInput.focus();
+        if (!lastFocusedCell) return; // Still no focusable cell
+    }
+
+    if (key === 'Enter') {
+        focusNextCell();
+    } else if (key === '⌫') { // Backspace
+        handleBackspace();
+    } else if (key.length === 1 && key >= 'A' && key <= 'Z') { // Letter key
+        lastFocusedCell.value = key;
+        checkSolutionAttempt(); // Check after input
+        focusNextCell();      // Move to next cell
+    }
+}
+
+function handleGridInput(event) {
+    if (!event.target.matches('.cell-unknown')) return;
+
+    // Ensure input is uppercase (optional)
+    event.target.value = event.target.value.toUpperCase();
+
+    checkSolutionAttempt(); // Check solution after any input
+
+    // Auto-advance if a single character was entered
+    if (event.target.value.length === 1) {
+         // Use setTimeout to allow the input event to fully resolve before changing focus
+         setTimeout(focusNextCell, 0);
+    }
+}
+
+// *** EVENT HANDLER for physical keyboard special keys (Tab, Backspace, Enter) in the grid ***
+function handleGridKeyDown(event) {
+    if (!event.target.matches('.cell-unknown')) return;
+
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent default Enter behavior (like form submission)
+        focusNextCell();
+    } else if (event.key === 'Tab') {
+        event.preventDefault(); // Prevent default Tab behavior
+        focusNextCell(); // Use our custom focus logic
+    } else if (event.key === 'Backspace') {
+        // If the cell is already empty when backspace is pressed, trigger backward movement
+        if (event.target.value === '') {
+            event.preventDefault(); // Prevent default backspace (which might navigate back)
+            handleBackspace(); // Move focus backward
+        }
+        // If the cell is not empty, the default backspace will clear it,
+        // and the subsequent 'input' event will handle the checkSolutionAttempt.
+    }
+    // Let other keys (like letters, arrows if desired) perform their default action
+}
+
 
 
 // --- Initial Setup ---
@@ -301,6 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
     generateGrid(); // Generate the grid using calculated layout/size
 
+    const firstInputCell = document.querySelector('.grid-cell.cell-unknown');
+    if (firstInputCell) {
+        lastFocusedCell = firstInputCell; // Set initial tracker
+        // Optional: Uncomment the next line if you want the grid to have focus immediately on load
+        firstInputCell.focus();
+    }
+
     // Easy mode check (keep as is)
     const easyModeCheckbox = document.getElementById('easyModeCheckbox');
     if (easyModeCheckbox?.checked) { toggleEasyMode(true); }
@@ -313,6 +464,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkSolutionAttempt();
             }
         });
+    }
+
+    const keyboard = document.getElementById('keyboard');
+    if (keyboard) {
+        keyboard.addEventListener('click', handleVirtualKeyboardClick);
     }
 
     // Initialize solution display (keep as is)
