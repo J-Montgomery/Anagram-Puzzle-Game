@@ -1,6 +1,3 @@
-// --- Minimal JS for UI Interaction ---
-
-// Modal Handling
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'block';
 }
@@ -9,22 +6,19 @@ function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
 
-// Close modal if clicking outside the content
 window.onclick = function(event) {
     const modals = document.getElementsByClassName('modal');
     for (let i = 0; i < modals.length; i++) {
         if (event.target == modals[i]) {
-            modals[i].style.display = 'none';
+            closeModal(modals[i].id);
         }
     }
 }
 
-// Easy Mode Toggle
 function toggleEasyMode(isEasy) {
     const possibleWordsDiv = document.getElementById('possibleWords');
     if (!possibleWordsDiv || !puzzle) return; // Added check for puzzle existence
 
-    // Use toggle with the boolean 'force' argument
     possibleWordsDiv.classList.toggle('visible', isEasy);
 
     if (isEasy) {
@@ -39,11 +33,65 @@ function toggleEasyMode(isEasy) {
     }
 }
 
+function getCharFrequency(word) {
+    const freq = {};
+    for (const char of word) {
+        freq[char] = (freq[char] || 0) + 1;
+    }
+    return freq;
+}
+
+function isPartialAnagram(word, baseWord) {
+    if (word.length > baseWord.length) {
+        return false;
+    }
+    const upperWord = word.toUpperCase();
+    const upperBaseWord = baseWord.toUpperCase();
+
+    const wordFreq = getCharFrequency(upperWord);
+    const baseFreq = getCharFrequency(upperBaseWord);
+
+    for (const char in wordFreq) {
+        if (!baseFreq[char] || wordFreq[char] > baseFreq[char]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+async function loadAndFilterDictionary(baseWord) {
+    const dictionaryPath = '/resource/wordlist';
+
+    try {
+        const response = await fetch(dictionaryPath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        const allWords = text.split(/\r?\n/);
+
+        const filteredWords = allWords.filter(word =>
+            word &&
+            word.length > 1 &&
+            isPartialAnagram(word, baseWord)
+        );
+
+        console.log(`Dictionary loaded. Found ${filteredWords.length} partial anagrams of "${baseWord}".`);
+        return filteredWords;
+
+    } catch (error) {
+        console.error(`Error loading or processing dictionary from ${dictionaryPath}:`, error);
+        return [];
+    }
+}
+
 let puzzle;
 let lastFocusedCell = null;
 let solutionFadeOutTimeoutId = null;
 let useNativeKeyboard = false;
 let touchedKeyElement = null;
+let dictionaryWords = [];
 
 function loadPuzzleData() {
     const puzzleDataElement = document.getElementById('puzzle-data');
@@ -580,7 +628,7 @@ function handleGridKeyDown(event) {
 }
 
 function toggleNativeKeyboard(isEnabled) {
-    useNativeKeyboard = isEnabled; // Update the state variable
+    useNativeKeyboard = isEnabled;
 
     // Get all the editable grid cells
     const inputCells = document.querySelectorAll('.grid-container .cell-unknown');
@@ -626,6 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!loadPuzzleData()) {
         return;
     }
+
+    dictionaryWords = loadAndFilterDictionary(puzzle.baseWord);
 
     document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
     generateGrid();

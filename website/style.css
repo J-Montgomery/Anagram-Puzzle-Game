@@ -43,6 +43,7 @@ ul.dashed > li:before {
     overflow: auto;
     background-color: rgba(0,0,0,0.6);
 }
+
 .modal-content {
     background-color: var(--box-bg);
     color: var(--text-color);
@@ -116,7 +117,7 @@ ul.dashed > li:before {
 .solution-display {
     color: var(--solution-text);
     font-weight: bold;
-    min-height: 1.5em; /* Reserve space */
+    min-height: 1.5em;
     transition: opacity 0.5s ease-in-out;
     font-size: 1.5em;
 }
