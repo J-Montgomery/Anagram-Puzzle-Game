@@ -170,6 +170,12 @@ ul.dashed > li:before {
     text-transform: uppercase;
     user-select: none;
 }
+
+.grid-cell.cell-unknown:focus {
+    outline: 2px solid var(--text-color);
+    outline-offset: 1px;
+}
+
 .cell-root {
     background-color: var(--root-bg);
     color: white;
