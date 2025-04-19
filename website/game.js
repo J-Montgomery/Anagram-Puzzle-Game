@@ -612,47 +612,48 @@ function focusNextCell() {
     const numRows = puzzle.gridSize.rows;
     const numCols = puzzle.gridSize.cols;
 
-    // 1. Try finding next unknown cell down in the same column
-    for (let r = startRow + 1; r < numRows; r++) {
-        const cell = getGridCellElement(r, startCol);
-        if (cell && cell.matches('.cell-unknown')) {
-            cell.focus();
-            return;
-        }
-    }
-
-    // 2. Try finding the first unknown cell in subsequent columns (top to bottom)
-    for (let c = startCol + 1; c < numCols; c++) {
-        for (let r = 0; r < numRows; r++) {
-            const cell = getGridCellElement(r, c);
+    let firstAvailableNextCell = null;
+    const search = (findEmptyOnly) => {
+        for (let r = startRow + 1; r < numRows; r++) {
+            const cell = getGridCellElement(r, startCol);
             if (cell && cell.matches('.cell-unknown')) {
-                cell.focus();
-                return;
+                if (!firstAvailableNextCell) firstAvailableNextCell = cell;
+                if (findEmptyOnly && cell.value === '') {
+                    cell.focus();
+                    return true;
+                } else if (!findEmptyOnly) {
+                    cell.focus();
+                    return true;
+                }
             }
         }
-    }
 
-    // 3. Wrap around: Try finding the first unknown cell from the beginning columns (top to bottom)
-    for (let c = 0; c <= startCol; c++) { // Include startCol in case it's the only column
-        for (let r = 0; r < numRows; r++) {
-            // Skip the original starting cell unless it's the only option left after wrapping
-            if (c === startCol && r <= startRow) continue;
-
-            const cell = getGridCellElement(r, c);
-            if (cell && cell.matches('.cell-unknown')) {
-                cell.focus();
-                return;
+        for (let c = startCol + 1; c < numCols; c++) {
+            for (let r = 0; r < numRows; r++) {
+                const cell = getGridCellElement(r, c);
+                if (cell && cell.matches('.cell-unknown')) {
+                    if (!firstAvailableNextCell) firstAvailableNextCell = cell;
+                    if (findEmptyOnly && cell.value === '') {
+                        cell.focus();
+                        return true;
+                    } else if (!findEmptyOnly) {
+                        cell.focus();
+                        return true;
+                    }
+                }
             }
         }
-    }
+        return false;
+    };
 
-    // 4. As a final fallback, if we wrapped all the way back, focus the very first unknown cell
-    const firstCell = document.querySelector('.grid-container .cell-unknown');
-    if (firstCell) {
-        firstCell.focus();
+    let foundTarget = search(true);
+
+    if (!foundTarget) {
+        if (firstAvailableNextCell) {
+            firstAvailableNextCell.focus();
+        }
     }
 }
-
 
 function handleBackspace() {
     if (!lastFocusedCell || !puzzle || !puzzle.gridSize) return;
@@ -666,8 +667,7 @@ function handleBackspace() {
         return;
     }
 
-    // If cell is already empty, move focus backward
-    // 1. Try finding previous unknown cell up in the same column
+    // Try finding previous unknown cell up in the same column
     for (let r = currentRow - 1; r >= 0; r--) {
         const prevCell = getGridCellElement(r, currentCol);
         if (prevCell && prevCell.matches('.cell-unknown')) {
@@ -676,7 +676,7 @@ function handleBackspace() {
         }
     }
 
-    // 2. Try finding the last unknown cell in the previous columns (right-to-left, bottom-to-top)
+    // Try finding the last unknown cell in the previous columns (right-to-left, bottom-to-top)
     for (let c = currentCol - 1; c >= 0; c--) {
         for (let r = puzzle.gridSize.rows - 1; r >= 0; r--) {
             const prevCell = getGridCellElement(r, c);
@@ -795,12 +795,8 @@ function handleGridKeyDown(event) {
             break;
 
         case 'Backspace':
-            if (currentCell.value === '') {
-                handleBackspace();
-                moveFocus = true;
-            } else {
-                preventDefault = false;
-            }
+            handleBackspace();
+            moveFocus = true;
             break;
 
         case 'ArrowUp':
