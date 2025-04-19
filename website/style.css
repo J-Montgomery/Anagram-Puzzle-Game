@@ -130,30 +130,28 @@ ul.dashed > li:before {
     width: 90%;
     max-width: 600px;
     display: flex;
-    justify-content: space-between; /* Keeps icons at ends, title in middle */
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 .top-bar-icon {
-    font-size: 24px; /* Adjust as needed */
+    font-size: 24px;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    flex-shrink: 0; /* Prevent icons from shrinking */
+    flex-shrink: 0;
 }
-/* --- NEW: Style for the title --- */
+
 .top-bar-title {
-    font-size: 1.4em; /* Adjust size relative to body font */
+    font-size: 1.4em;
     font-weight: bold;
-    text-align: center; /* Ensures text is centered if it wraps */
-    flex-grow: 1; /* Allows title to take up available space */
-    margin: 0 10px; /* Add some space between title and icons */
-    /* Optional: Prevent title text from being selected */
+    text-align: center;
+    flex-grow: 1;
+    margin: 0 10px;
     user-select: none;
     -webkit-user-select: none;
 }
 
-/* --- Grid Area --- */
 .grid-container {
     display: grid;
     /* grid-template-columns will be set by JS */
@@ -188,22 +186,18 @@ ul.dashed > li:before {
 .cell-unknown {
     background-color: var(--unknown-bg);
     color: var(--text-color);
-    cursor: text; /* Indicate input possibility */
-    /* Basic input styling */
+    cursor: text;
     border: none;
     outline: none;
     text-align: center;
     padding: 0;
-    font-size: 1.5em; /* Match other cells */
-    font-weight: bold; /* Match other cells */
-    text-transform: uppercase; /* Match other cells */
+    font-size: 1.5em;
+    font-weight: bold;
+    text-transform: uppercase;
     font-family: "EB Garamond", serif;
 }
 
 .cell-unknown[inputmode="none"] {
-    /* Example: Add a subtle visual cue */
-    /* border: 1px dashed var(--key-bg); */
-    /* Or change cursor slightly */
      cursor: default;
 }
 
@@ -213,25 +207,23 @@ ul.dashed > li:before {
 }
 
 .cell-prefilled-unknown {
-    background-color: var(--prefilled-bg); /* Use #4c5255 */
+    background-color: var(--prefilled-bg);
     color: var(--text-color);
-    /* Ensure alignment and font match other cells */
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.5em;
     font-weight: bold;
     text-transform: uppercase;
-    user-select: none; /* Not selectable like input */
+    user-select: none;
     -webkit-user-select: none;
 }
 
 .cell-empty {
-    background-color: transparent; /* Same as body background */
-    pointer-events: none; /* Not interactive */
+    background-color: transparent;
+    pointer-events: none;
 }
 
-/* --- Possible Words --- */
 .possible-words {
     display: none; /* Hidden by default, shown via JS */
     background-color: var(--box-bg);
@@ -263,12 +255,11 @@ ul.dashed > li:before {
 .word-list span:hover {
     background-color: var(--unknown-bg);
 }
-.word-list i { /* Style for placeholder text */
+.word-list i {
     color: var(--unknown-bg);
 }
 
-
-/* --- Keyboard --- */
+/* --- Keyboard Area --- */
 .keyboard {
     background-color: var(--box-bg);
     border-radius: 15px;
@@ -289,12 +280,12 @@ ul.dashed > li:before {
     border: none;
     border-radius: 5px;
     padding: 10px;
-    min-width: 30px; /* Minimum width */
+    min-width: 30px;
     height: 40px;
     font-size: 1em;
     font-weight: bold;
     cursor: pointer;
-    flex-grow: 1; /* Allow keys to grow */
+    flex-grow: 1;
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -312,7 +303,8 @@ ul.dashed > li:before {
     }
 }
 
+/* Wider keys like Enter/Backspace */
 .key-large {
-    min-width: 50px; /* Wider keys like Enter/Backspace */
+    min-width: 50px;
     flex-grow: 2;
 }
