@@ -12,7 +12,8 @@
 body {
     background-color: var(--background-color);
     color: var(--text-color);
-    font-family: sans-serif;
+    font-family: "EB Garamond", serif;
+    font-size: 14pt;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -110,13 +111,42 @@ ul.dashed > li:before {
 .clue-text {
     color: var(--text-color);
     margin-bottom: 10px;
-    font-style: italic;
+    font-size: 1.5em;
 }
 .solution-display {
     color: var(--solution-text);
     font-weight: bold;
     min-height: 1.2em; /* Reserve space */
     transition: opacity 0.5s ease-in-out;
+    font-size: 1.5em;
+}
+
+.top-bar {
+    background-color: var(--box-bg);
+    border-radius: 15px;
+    padding: 10px 20px;
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between; /* Keeps icons at ends, title in middle */
+    align-items: center;
+    margin-bottom: 20px;
+}
+.top-bar-icon {
+    font-size: 24px; /* Adjust as needed */
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0; /* Prevent icons from shrinking */
+}
+/* --- NEW: Style for the title --- */
+.top-bar-title {
+    font-size: 1.4em; /* Adjust size relative to body font */
+    font-weight: bold;
+    text-align: center; /* Ensures text is centered if it wraps */
+    flex-grow: 1; /* Allows title to take up available space */
+    margin: 0 10px; /* Add some space between title and icons */
+    /* Optional: Prevent title text from being selected */
+    user-select: none;
 }
 
 /* --- Grid Area --- */
