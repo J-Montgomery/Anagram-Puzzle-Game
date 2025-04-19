@@ -43,6 +43,7 @@ let puzzle;
 let lastFocusedCell = null;
 let solutionFadeOutTimeoutId = null;
 let useNativeKeyboard = false;
+let touchedKeyElement = null;
 
 function loadPuzzleData() {
     const puzzleDataElement = document.getElementById('puzzle-data');
@@ -486,6 +487,46 @@ function handleBackspace() {
     }
 }
 
+function handleKeyboardTouchStart(event) {
+    // // Only act on direct key presses
+    if (event.target.matches('.key')) {
+        touchedKeyElement = event.target; // Remember the key
+        touchedKeyElement.classList.add('key-pressed-visual');
+        // Optional: Prevent default if it interferes with scrolling/selection
+        // event.preventDefault();
+    } else {
+        touchedKeyElement = null; // Reset if touch starts outside a key
+    }
+}
+
+function handleKeyboardTouchEnd(event) {
+    // // Remove the visual style from the key that was being touched
+    if (touchedKeyElement) {
+        // alert('Untouched key: ' + touchedKeyElement.textContent);
+        touchedKeyElement.classList.remove('key-pressed-visual');
+        // Check if the touch ended *on the same key* it started on.
+        // This prevents triggering if the finger slides off.
+        const touch = event.changedTouches[0];
+        const elementReleasedOn = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (elementReleasedOn === touchedKeyElement) {
+            // If touch ended on the original key, trigger the action
+            // We let the subsequent 'click' event handle the actual logic
+            // to avoid duplicating code and ensure desktop compatibility.
+            // However, if 'click' doesn't fire reliably after touchend on some devices,
+            // you might need to call processKeyPress(touchedKeyElement.textContent) here.
+        }
+        touchedKeyElement = null; // Reset tracker
+    }
+}
+
+function handleKeyboardTouchCancel(event) {
+    if (touchedKeyElement) {
+        touchedKeyElement.classList.remove('key-pressed-visual');
+        touchedKeyElement = null; // Reset tracker
+    }
+}
+
 function handleVirtualKeyboardClick(event) {
     if (!event.target.matches('.key')) return;
 
@@ -612,6 +653,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const keyboard = document.getElementById('keyboard');
     if (keyboard) {
         keyboard.addEventListener('click', handleVirtualKeyboardClick);
+        keyboard.addEventListener('touchstart', handleKeyboardTouchStart, { passive: true });
+        keyboard.addEventListener('touchend', handleKeyboardTouchEnd);
+        keyboard.addEventListener('touchcancel', handleKeyboardTouchCancel);
     }
 
     const solutionDisplay = document.getElementById('solutionDisplay');

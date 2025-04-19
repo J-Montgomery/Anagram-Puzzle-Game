@@ -285,12 +285,21 @@ ul.dashed > li:before {
     flex-grow: 1; /* Allow keys to grow */
     display: flex;
     justify-content: center;
+    overflow: hidden;
     align-items: center;
     transition: background-color 0.2s;
 }
-.key:hover {
+.key.key-pressed-visual {
     background-color: var(--unknown-bg);
+    outline: none;
 }
+@media (hover: hover) and (pointer: fine) {
+    .key:hover {
+        background-color: var(--unknown-bg);
+        outline: none;
+    }
+}
+
 .key-large {
     min-width: 50px; /* Wider keys like Enter/Backspace */
     flex-grow: 2;
