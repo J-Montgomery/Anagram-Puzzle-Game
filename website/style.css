@@ -31,6 +31,13 @@ ul.dashed > li:before {
     content: "- ";
 }
 
+#app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 /* --- Modals --- */
 .modal {
     display: none; /* Hidden by default */

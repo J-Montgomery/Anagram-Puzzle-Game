@@ -869,7 +869,9 @@ async function initializeDictionary() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// document.addEventListener('DOMContentLoaded', () => {
+function initializeGame() {
+    
     const nativeKeyboardCheckbox = document.getElementById('nativeKeyboardCheckbox');
     if (nativeKeyboardCheckbox) {
          useNativeKeyboard = nativeKeyboardCheckbox.checked;
@@ -915,4 +917,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const solutionDisplay = document.getElementById('solutionDisplay');
     solutionDisplay.textContent = '';
     solutionDisplay.style.opacity = 0;
-});
+};
+
+initializeGame();
