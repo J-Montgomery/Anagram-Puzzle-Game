@@ -9,39 +9,18 @@
 <body>
 
     <script id="puzzle-data" type="application/json">
-        {
-            "rootWord": "LISTEN",
-            "clue": "Pay attention quietly.",
-            "solutionSentence": "SILENT LISTENERS",
-            "solutionWords": ["SILENT", "LISTEN", "LISTENERS"],
-            "layout": [
-                { "type": 1, "coord": [0, 3], "wordIndex": 0, "letterIndex": 0 },
-                { "type": 1, "coord": [1, 3], "wordIndex": 0, "letterIndex": 1 },
-                { "type": 1, "coord": [2, 3], "wordIndex": 0, "letterIndex": 2 },
-                { "type": 1, "coord": [3, 3], "wordIndex": 0, "letterIndex": 3 },
-                { "type": 1, "coord": [4, 3], "wordIndex": 0, "letterIndex": 4 },
-                { "type": 1, "coord": [5, 3], "wordIndex": 0, "letterIndex": 5 },
-                { "type": 2, "coord": [6, 0], "char": "L", "wordIndex": 1, "letterIndex": 0 },
-                { "type": 2, "coord": [6, 1], "char": "I", "wordIndex": 1, "letterIndex": 1 },
-                { "type": 2, "coord": [6, 2], "char": "S", "wordIndex": 1, "letterIndex": 2 },
-                { "type": 2, "coord": [6, 3], "char": "T", "wordIndex": 1, "letterIndex": 3 },
-                { "type": 2, "coord": [6, 4], "char": "E", "wordIndex": 1, "letterIndex": 4 },
-                { "type": 2, "coord": [6, 5], "char": "N", "wordIndex": 1, "letterIndex": 5 },
-                { "type": 1, "coord": [7, 3], "wordIndex": 2, "letterIndex": 0 },
-                { "type": 1, "coord": [8, 3], "wordIndex": 2, "letterIndex": 1 },
-                { "type": 3, "coord": [9, 3], "char": "S", "wordIndex": 2, "letterIndex": 2 },
-                { "type": 1, "coord": [10, 3], "wordIndex": 2, "letterIndex": 3 },
-                { "type": 1, "coord": [11, 3], "wordIndex": 2, "letterIndex": 4 },
-                { "type": 1, "coord": [12, 3], "wordIndex": 2, "letterIndex": 5 },
-                { "type": 1, "coord": [13, 3], "wordIndex": 2, "letterIndex": 6 },
-                { "type": 1, "coord": [14, 3], "wordIndex": 2, "letterIndex": 7 },
-                { "type": 1, "coord": [15, 3], "wordIndex": 2, "letterIndex": 8 }
-            ],
-            "gridSize": { "rows": 16, "cols": 7 },
-            "anagrams": ["SILENT", "LISTEN", "LISTENERS", "INLETS", "TINSEL", "ENLIST"]
-        }
+    {
+        "baseWord": "TULIPS",
+        "clue": "A nice flower",
+        "solutionSentence": "Split lip tulips",
+        "unknowns": [
+            { "word": "SPLIT", "columnIndex": 2, "overlapIndex": 2 },
+            { "word": "LIP", "columnIndex": 3, "overlapIndex": 1 }
+        ],
+        "anagrams": ["SILENT", "LISTEN", "TEN", "NET", "TINSEL", "INLETS"]
+    }
     </script>
-    
+
     <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
