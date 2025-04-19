@@ -83,7 +83,7 @@ function isCellCorrect(cell) {
 }
 
 async function loadAndFilterDictionary(baseWord, additions = []) {
-    const dictionaryPath = '/resource/wordlist';
+    const dictionaryPath = '/assets/wordlist';
 
     try {
         const response = await fetch(dictionaryPath);

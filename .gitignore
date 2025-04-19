@@ -1,4 +1,4 @@
 build/
 venv/
-docs/resource/wordlist
+docs/assets/wordlist
 *.pdf

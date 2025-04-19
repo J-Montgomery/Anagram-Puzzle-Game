@@ -1,6 +1,6 @@
 COMPILER = xelatex
 BUILDDIR = build
-WORDLIST ?= docs/resource/wordlist
+WORDLIST ?= docs/assets/wordlist
 LIST_LANG ?= en
 
 all: anagrammiton.pdf
