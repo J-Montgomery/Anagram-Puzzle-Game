@@ -654,79 +654,49 @@ function checkSolutionAttempt() {
 function focusNextCell() {
     if (!lastFocusedCell || !puzzle || !puzzle.gridSize) return;
 
-    const currentCell = lastFocusedCell;
-    const startRow = parseInt(currentCell.dataset.row, 10);
-    const startCol = parseInt(currentCell.dataset.col, 10);
+    const startRow = parseInt(lastFocusedCell.dataset.row, 10);
+    const startCol = parseInt(lastFocusedCell.dataset.col, 10);
     const numRows = puzzle.gridSize.rows;
     const numCols = puzzle.gridSize.cols;
 
-    // --- Phase 1: Find Next EMPTY Unknown Cell ---
-    // Search order: Down current col -> Next cols top-down -> Wrap cols top-down
-
-    // 1a. Down current column (from row AFTER current)
+    // 1. Try finding next unknown cell down in the same column
     for (let r = startRow + 1; r < numRows; r++) {
         const cell = getGridCellElement(r, startCol);
-        if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+        if (cell && cell.matches('.cell-unknown')) {
             cell.focus();
             return;
         }
     }
 
-    // 1b. Subsequent columns (top to bottom)
+    // 2. Try finding the first unknown cell in subsequent columns (top to bottom)
     for (let c = startCol + 1; c < numCols; c++) {
         for (let r = 0; r < numRows; r++) {
             const cell = getGridCellElement(r, c);
-            if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+            if (cell && cell.matches('.cell-unknown')) {
                 cell.focus();
                 return;
             }
         }
     }
 
-    // 1c. Wrap around columns (from col 0 up to startCol, top to bottom)
-    for (let c = 0; c <= startCol; c++) {
+    // 3. Wrap around: Try finding the first unknown cell from the beginning columns (top to bottom)
+    for (let c = 0; c <= startCol; c++) { // Include startCol in case it's the only column
         for (let r = 0; r < numRows; r++) {
-            // Skip the starting cell itself during wrap-around search for *empty*
-            if (c === startCol && r === startRow) continue;
+            // Skip the original starting cell unless it's the only option left after wrapping
+            if (c === startCol && r <= startRow) continue;
+
             const cell = getGridCellElement(r, c);
-            if (cell && cell.matches('.cell-unknown') && cell.value === '') {
+            if (cell && cell.matches('.cell-unknown')) {
                 cell.focus();
                 return;
             }
         }
     }
 
-    // 2a. Down current column (from row AFTER current)
-    for (let r = startRow + 1; r < numRows; r++) {
-        const cell = getGridCellElement(r, startCol);
-        // Check if it's a filled unknown cell AND it's incorrect
-        if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
-            cell.focus();
-            return;
-        }
-    }
-
-    // 2b. Subsequent columns (top to bottom)
-    for (let c = startCol + 1; c < numCols; c++) {
-        for (let r = 0; r < numRows; r++) {
-            const cell = getGridCellElement(r, c);
-            if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
-                cell.focus();
-                return;
-            }
-        }
-    }
-
-    // 2c. Wrap around columns (from col 0 up to startCol, top to bottom)
-    // *Include* the starting cell this time in the check, as it might be the first incorrect one encountered
-    for (let c = 0; c <= startCol; c++) {
-        for (let r = 0; r < numRows; r++) {
-            const cell = getGridCellElement(r, c);
-            if (cell && cell.matches('.cell-unknown') && cell.value !== '' && !isCellCorrect(cell)) {
-                cell.focus();
-                return;
-            }
-        }
+    // 4. As a final fallback, if we wrapped all the way back, focus the very first unknown cell
+    const firstCell = document.querySelector('.grid-container .cell-unknown');
+    if (firstCell) {
+        firstCell.focus();
     }
 }
 
@@ -762,6 +732,33 @@ function handleBackspace() {
                 return;
             }
         }
+    }
+}
+
+function moveFocusInDirection(startRow, startCol, dRow, dCol) {
+    if (!puzzle || !puzzle.gridSize) return;
+    const numRows = puzzle.gridSize.rows;
+    const numCols = puzzle.gridSize.cols;
+
+    let currentRow = startRow + dRow;
+    let currentCol = startCol + dCol;
+
+    // Loop in the specified direction until a valid cell is found or bounds exceeded
+    while (currentRow >= 0 && currentRow < numRows && currentCol >= 0 && currentCol < numCols) {
+        const cell = getGridCellElement(currentRow, currentCol);
+        if (cell && cell.matches('.cell-unknown')) {
+            cell.focus();
+            return; // Found and focused
+        }
+        // Move one more step in the same direction
+        currentRow += dRow;
+        currentCol += dCol;
+    }
+
+    // If no cell found in that direction, stay in the original cell
+    const originalCell = getGridCellElement(startRow, startCol);
+    if (originalCell) {
+        originalCell.focus();
     }
 }
 
@@ -827,28 +824,66 @@ function handleGridInput(event) {
     populateWordList();
 }
 
-// *** EVENT HANDLER for physical keyboard special keys (Tab, Backspace, Enter) in the grid ***
 function handleGridKeyDown(event) {
     if (!event.target.matches('.cell-unknown')) return;
+    if (event.repeat) return;
 
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        focusNextCell();
-    } else if (event.key === 'Tab') {
-        event.preventDefault();
-        focusNextCell();
-    } else if (event.key === 'Backspace') {
-        if (event.target.value === '') {
-            event.preventDefault();
-            handleBackspace();
-        }
-    } else if (event.key >= 'a' && event.key <= 'z') {
-        lastFocusedCell.value = event.key.toUpperCase();
-        checkSolutionAttempt();
-        focusNextCell();
+    const currentCell = event.target;
+    const currentRow = parseInt(currentCell.dataset.row, 10);
+    const currentCol = parseInt(currentCell.dataset.col, 10);
+    let preventDefault = true;
+    let moveFocus = false;
+
+    switch (event.key) {
+        case 'Enter':
+        case 'Tab':
+            focusNextCell();
+            moveFocus = true;
+            break;
+
+        case 'Backspace':
+            if (currentCell.value === '') {
+                handleBackspace();
+                moveFocus = true;
+            } else {
+                preventDefault = false;
+            }
+            break;
+
+        case 'ArrowUp':
+            moveFocusInDirection(currentRow, currentCol, -1, 0);
+            moveFocus = true;
+            break;
+        case 'ArrowDown':
+            moveFocusInDirection(currentRow, currentCol, 1, 0);
+            moveFocus = true;
+            break;
+        case 'ArrowLeft':
+            moveFocusInDirection(currentRow, currentCol, 0, -1);
+            moveFocus = true;
+            break;
+        case 'ArrowRight':
+            moveFocusInDirection(currentRow, currentCol, 0, 1);
+            moveFocus = true;
+            break;
+
+        default:
+            if (event.key.length === 1 && event.key.match(/[a-z]/i)) {
+                currentCell.value = event.key.toUpperCase();
+                checkSolutionAttempt();
+                focusNextCell();
+                moveFocus = true;
+            } else {
+                preventDefault = false;
+            }
+            break;
     }
 
-    populateWordList();
+    if (preventDefault) {
+        event.preventDefault();
+    }
+
+    setTimeout(populateWordList, 0);
 }
 
 function toggleNativeKeyboard(isEnabled) {

@@ -197,7 +197,7 @@ ul.dashed > li:before {
     font-size: 1.5em; /* Match other cells */
     font-weight: bold; /* Match other cells */
     text-transform: uppercase; /* Match other cells */
-    font-family: sans-serif; /* Match body */
+    font-family: "EB Garamond", serif;
 }
 
 .cell-unknown[inputmode="none"] {
