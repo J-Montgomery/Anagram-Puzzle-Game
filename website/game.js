@@ -13,6 +13,7 @@ window.onclick = function(event) {
             closeModal(modals[i].id);
         }
     }
+    populateWordList();
 }
 
 function toggleEasyMode(isEasy) {
@@ -21,16 +22,10 @@ function toggleEasyMode(isEasy) {
 
     possibleWordsDiv.classList.toggle('visible', isEasy);
 
-    if (isEasy) {
-        // Populate with random words or context-specific words
-        // Ensure puzzle.anagrams exists before trying to use it
-        const wordsToShow = puzzle.anagrams
-            ? [...puzzle.anagrams].sort(() => 0.5 - Math.random()).slice(0, 5) // Show 5 random
-            : []; // Default to empty if anagrams aren't loaded
-        populateWordList(wordsToShow);
-    } else {
-         populateWordList([]); // Clear list when turning off
+    if (!isEasy) {
+        lastFocusedCell = null;
     }
+    populateWordList();
 }
 
 function getCharFrequency(word) {
@@ -77,7 +72,7 @@ async function loadAndFilterDictionary(baseWord) {
             isPartialAnagram(word, baseWord)
         );
 
-        console.log(`Dictionary loaded. Found ${filteredWords.length} partial anagrams of "${baseWord}".`);
+        console.info(`Dictionary loaded. Found ${filteredWords.length} partial anagrams of "${baseWord}".`);
         return filteredWords;
 
     } catch (error) {
@@ -167,6 +162,7 @@ let solutionFadeOutTimeoutId = null;
 let useNativeKeyboard = false;
 let touchedKeyElement = null;
 let dictionaryWords = [];
+let gridContainer, possibleWordsDiv, keyboardDiv;
 
 function loadPuzzleData() {
     const puzzleDataElement = document.getElementById('puzzle-data');
@@ -365,8 +361,8 @@ function generateGrid() {
         if (event.target.matches('.cell-unknown')) {
             // Set the lastFocusedCell to the first unknown cell
             lastFocusedCell = event.target;
-            populateWordList();
         }
+        populateWordList();
     });
 
     container.addEventListener('input', handleGridInput);
@@ -411,7 +407,6 @@ function populateWordList() {
     });
 
     if (!Array.isArray(dictionaryWords)) {
-        console.log(typeof dictionaryWords);
         console.warn("populateWordList called before dictionaryWords was initialized as an array.");
         return;
     }
@@ -607,7 +602,6 @@ function checkSolutionAttempt() {
 
         // Compare the reconstructed word with the expected word
         if (enteredWord !== expectedWord) {
-            console.log(`Mismatch for word ${wordIdx}: Expected "${expectedWord}", Got "${enteredWord}"`); // Debugging line
             allWordsCorrect = false;
             break;
         }
@@ -620,7 +614,6 @@ function checkSolutionAttempt() {
         console.log('Solution is correct!');
     } else {
         if (solutionDisplay.textContent !== '') {
-            console.log('Solution is incorrect!');
             solutionDisplay.style.opacity = 0;
             if (solutionFadeOutTimeoutId) { clearTimeout(solutionFadeOutTimeoutId); }
             solutionFadeOutTimeoutId = setTimeout(() => {
@@ -771,6 +764,7 @@ function handleVirtualKeyboardClick(event) {
         checkSolutionAttempt();
         focusNextCell();
     }
+    populateWordList();
 }
 
 function handleGridInput(event) {
@@ -783,6 +777,7 @@ function handleGridInput(event) {
          // Use setTimeout to allow the input event to fully resolve before changing focus
          setTimeout(focusNextCell, 0);
     }
+    populateWordList();
 }
 
 // *** EVENT HANDLER for physical keyboard special keys (Tab, Backspace, Enter) in the grid ***
@@ -801,6 +796,8 @@ function handleGridKeyDown(event) {
             handleBackspace();
         }
     }
+
+    populateWordList();
 }
 
 function toggleNativeKeyboard(isEnabled) {
@@ -838,16 +835,12 @@ function toggleNativeKeyboard(isEnabled) {
         setTimeout(() => currentFocus.focus(), 0);
     }
 
-    console.log(`Native keyboard ${useNativeKeyboard ? 'enabled' : 'disabled'}`);
+    console.info(`Native keyboard ${useNativeKeyboard ? 'enabled' : 'disabled'}`);
 }
 
 async function initializeDictionary() {
     try {
-        console.log("Initializing game, awaiting dictionary...");
         dictionaryWords = await loadAndFilterDictionary(puzzle.baseWord);
-        console.log("Dictionary loaded, proceeding...");
-
-        // *** These lines run ONLY AFTER the await completes ***
         if (!Array.isArray(dictionaryWords)) {
              console.error("Dictionary did not load as an array!", dictionaryWords);
              dictionaryWords = []; // Fallback
@@ -856,7 +849,6 @@ async function initializeDictionary() {
 
     } catch (error) {
         console.error("Failed to initialize game:", error);
-        // Handle initialization error (e.g., show message to user)
     }
 }
 

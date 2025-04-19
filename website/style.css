@@ -100,6 +100,7 @@ ul.dashed > li:before {
     font-size: 24px;
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
 }
 
 /* --- Clue Area --- */
@@ -137,6 +138,7 @@ ul.dashed > li:before {
     font-size: 24px; /* Adjust as needed */
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
     flex-shrink: 0; /* Prevent icons from shrinking */
 }
 /* --- NEW: Style for the title --- */
@@ -148,6 +150,7 @@ ul.dashed > li:before {
     margin: 0 10px; /* Add some space between title and icons */
     /* Optional: Prevent title text from being selected */
     user-select: none;
+    -webkit-user-select: none;
 }
 
 /* --- Grid Area --- */
@@ -170,6 +173,7 @@ ul.dashed > li:before {
     font-weight: bold;
     text-transform: uppercase;
     user-select: none;
+    -webkit-user-select: none;
 }
 
 .grid-cell.cell-unknown:focus {
@@ -219,6 +223,7 @@ ul.dashed > li:before {
     font-weight: bold;
     text-transform: uppercase;
     user-select: none; /* Not selectable like input */
+    -webkit-user-select: none;
 }
 
 .cell-empty {
