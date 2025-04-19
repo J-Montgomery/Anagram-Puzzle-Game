@@ -231,6 +231,7 @@ ul.dashed > li:before {
     padding: 15px;
     width: 90%;
     max-width: 600px;
+    min-height: 4.5em;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -256,7 +257,7 @@ ul.dashed > li:before {
     background-color: var(--unknown-bg);
 }
 .word-list i {
-    color: var(--unknown-bg);
+    color: var(--text-color);
 }
 
 /* --- Keyboard Area --- */
@@ -264,8 +265,8 @@ ul.dashed > li:before {
     background-color: var(--box-bg);
     border-radius: 15px;
     padding: 15px;
-    width: 90%;
-    max-width: 600px;
+    width: fit-content;
+    max-width: 100%;
     text-align: center;
 }
 .keyboard-row {
@@ -281,7 +282,9 @@ ul.dashed > li:before {
     border-radius: 5px;
     padding: 10px;
     min-width: 30px;
+    max-width: 60px;
     height: 40px;
+    font-family: "EB Garamond", serif;
     font-size: 1em;
     font-weight: bold;
     cursor: pointer;
