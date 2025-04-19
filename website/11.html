@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Sentence Puzzle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <script id="puzzle-data" type="application/json">
+    {
+        "baseWord": "CONSERVATION",
+        "clue": "An Inconvenient Truth:",
+        "solutionSentence": "actions on conservation save nations",
+        "unknowns": [
+            { 
+                "word": "ACTIONS", 
+                "columnIndex": 1, 
+                "overlapIndex": 4,
+                "prefilledIndices": [2] 
+            },
+            { 
+                "word": "ON", 
+                "columnIndex": 2, 
+                "overlapIndex": 1,
+                "prefilledIndices": [] 
+            },
+            { 
+                "word": "SAVE", 
+                "columnIndex": 3, 
+                "overlapIndex": 0,
+                "prefilledIndices": [3] 
+            },
+            { 
+                "word": "NATIONS", 
+                "columnIndex": 11, 
+                "overlapIndex": 0,
+                "prefilledIndices": [6] 
+            }
+        ],
+        "anagrams": []
+    }
+    </script>
+
+    <div id="app-container">Loading template...</div>
+    <a id="nextPuzzleLink" href="12.html" class="arrow-hidden">
+        <div id="nextPuzzleArrowContent">
+            <span>&rarr;</span>
+        </div>
+    </a>
+
+    <script>
+        fetch('template.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                document.getElementById('app-container').innerHTML = html;
+                const gameScript = document.createElement('script');
+                gameScript.src = 'game.js';
+                gameScript.defer = true;
+                document.body.appendChild(gameScript);
+            })
+            .catch(error => {
+                console.error('Error loading template:', error);
+                document.getElementById('app-container').innerHTML = 'Error loading puzzle interface.';
+            });
+    </script>
+</body>
+</html>

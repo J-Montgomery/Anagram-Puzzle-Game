@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Sentence Puzzle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <script id="puzzle-data" type="application/json">
+    {
+        "baseWord": "EXHIBITIONIST",
+        "clue": "Not PG-13",
+        "solutionSentence": "The exhibitionist bit the hottie in sex",
+        "unknowns": [
+            { 
+                "word": "THE", 
+                "columnIndex": 0, 
+                "overlapIndex": 2,
+                "prefilledIndices": [] 
+            },
+            { 
+                "word": "BIT", 
+                "columnIndex": 3, 
+                "overlapIndex": 1,
+                "prefilledIndices": [2] 
+            },
+            { 
+                "word": "THE", 
+                "columnIndex": 6, 
+                "overlapIndex": 0,
+                "prefilledIndices": [] 
+            },
+            { 
+                "word": "HOTTIE", 
+                "columnIndex": 8, 
+                "overlapIndex": 1,
+                "prefilledIndices": [0] 
+            },
+            { 
+                "word": "IN", 
+                "columnIndex": 10, 
+                "overlapIndex": 0,
+                "prefilledIndices": [] 
+            },
+            { 
+                "word": "SEX", 
+                "columnIndex": 11, 
+                "overlapIndex": 0,
+                "prefilledIndices": [2] 
+            }
+        ],
+        "anagrams": []
+    }
+    </script>
+
+    <div id="app-container">Loading template...</div>
+    <a id="nextPuzzleLink" href="13.html" class="arrow-hidden">
+        <div id="nextPuzzleArrowContent">
+            <span>&rarr;</span>
+        </div>
+    </a>
+
+    <script>
+        fetch('template.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                document.getElementById('app-container').innerHTML = html;
+                const gameScript = document.createElement('script');
+                gameScript.src = 'game.js';
+                gameScript.defer = true;
+                document.body.appendChild(gameScript);
+            })
+            .catch(error => {
+                console.error('Error loading template:', error);
+                document.getElementById('app-container').innerHTML = 'Error loading puzzle interface.';
+            });
+    </script>
+</body>
+</html>
