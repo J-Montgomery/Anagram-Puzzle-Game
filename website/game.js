@@ -211,19 +211,104 @@ function generateGrid() {
 function populateWordList(words) {
     const wordListDiv = document.getElementById('wordList');
     wordListDiv.innerHTML = ''; // Clear previous list
-    words.forEach(word => {
+
+    if (!puzzle) return; // Need puzzle data for anagrams
+
+    // Determine words to display (e.g., random, or filtered based on focus)
+    // For now, let's just use the provided list or random anagrams
+    let displayWords = words;
+    if (!displayWords || displayWords.length === 0) {
+        // Example: Show N random anagrams if no specific list provided
+        displayWords = [...puzzle.anagrams].sort(() => 0.5 - Math.random()).slice(0, 5);
+    }
+
+    displayWords.forEach(word => {
         const span = document.createElement('span');
         span.textContent = word;
+        // *** UPDATE: Call fillColumnWithWord on click ***
         span.onclick = () => {
-            // TODO: Add logic to fill the selected column with this word
-            console.log(`Clicked word: ${word}`);
+            fillColumnWithWord(word.toUpperCase()); // Pass the clicked word (uppercase)
         };
         wordListDiv.appendChild(span);
     });
-     // Add placeholder if empty and easy mode is on
-     if (words.length === 0 && document.getElementById('easyModeCheckbox')?.checked) {
-         wordListDiv.innerHTML = '<i>Select a column or type to see suggestions.</i>';
-     }
+
+    // Add placeholder if easy mode is on but no words are shown
+    if (displayWords.length === 0 && document.getElementById('easyModeCheckbox')?.checked) {
+        wordListDiv.innerHTML = '<i>No suggestions available.</i>'; // Or other message
+    } else if (!lastFocusedCell && document.getElementById('easyModeCheckbox')?.checked) {
+         // Optional: Guide user if easy mode is on but no cell selected
+         // wordListDiv.innerHTML = '<i>Click a cell in a column to see suggestions.</i>';
+    }
+}
+
+function fillColumnWithWord(word) {
+    if (!lastFocusedCell) {
+        alert("Please click on a cell in the column you want to fill first.");
+        return;
+    }
+    if (!word) return;
+
+    const targetCol = lastFocusedCell.dataset.col;
+
+    // Find all input cells in the target column
+    const columnCells = document.querySelectorAll(`.grid-cell.cell-unknown[data-col="${targetCol}"]`);
+
+    // Sort them by row index to ensure top-to-bottom order
+    const sortedCells = Array.from(columnCells).sort((a, b) =>
+        parseInt(a.dataset.row) - parseInt(b.dataset.row)
+    );
+
+    // Check if the number of cells matches the word length
+    // This is a basic check; more sophisticated filtering might be needed
+    // depending on how easy mode suggestions are generated.
+    if (sortedCells.length !== word.length) {
+         // Find the cell corresponding to the overlap index for this column
+         const unknownDef = puzzle.unknowns.find(u => u.columnIndex == targetCol);
+         const overlapRow = unknownDef ? puzzle.baseRowInGrid + (unknownDef.overlapIndex - unknownDef.overlapIndex) : -1; // This simplifies to baseRowInGrid
+         const overlapCell = document.querySelector(`.grid-cell.cell-root[data-row="${puzzle.baseRowInGrid}"][data-col="${targetCol}"]`);
+
+         // We need to account for the overlapping letter which is NOT an input
+         if (overlapCell && sortedCells.length === word.length -1) {
+            // This is the expected case: word length is one more than input cells
+            let letterIndex = 0;
+            for(let i = 0; i < word.length; i++) {
+                const expectedRow = puzzle.baseRowInGrid + (i - unknownDef.overlapIndex);
+                if (expectedRow === puzzle.baseRowInGrid) {
+                    // This is the overlap position, skip assigning to input
+                    continue;
+                }
+                // Find the corresponding input cell (should exist)
+                const targetCell = sortedCells[letterIndex];
+                if (targetCell) {
+                     targetCell.value = word[i];
+                     letterIndex++;
+                } else {
+                    console.warn(`Mismatch: Expected input cell for letter ${word[i]} not found.`);
+                    break; // Stop filling if something is wrong
+                }
+            }
+         } else {
+            alert(`Word "${word}" (${word.length} letters) doesn't fit the number of available input cells (${sortedCells.length}) in this column.`);
+            return;
+         }
+
+    } else {
+         // Fallback/alternative: If word length EXACTLY matches input cells (no overlap?)
+         // This case might indicate an issue with puzzle definition or logic.
+         console.warn("Word length matches input cell count directly. Check puzzle definition for column", targetCol);
+         sortedCells.forEach((cell, index) => {
+             if (index < word.length) {
+                 cell.value = word[index];
+             }
+         });
+    }
+
+
+    // Trigger solution check after filling
+    checkSolutionAttempt();
+
+    // Optional: Move focus after filling
+    focusNextCell(); // Or focus the start of the next column, etc.
 }
 
 function checkSolutionAttempt() {
@@ -303,34 +388,50 @@ function focusNextCell() {
     if (!lastFocusedCell || !puzzle) return;
 
     const currentCell = lastFocusedCell;
-    const currentRow = parseInt(currentCell.dataset.row);
-    const currentCol = parseInt(currentCell.dataset.col);
+    const startRow = parseInt(currentCell.dataset.row);
+    const startCol = parseInt(currentCell.dataset.col);
 
-    // 1. Try finding next cell down in the same column
-    for (let r = currentRow + 1; r < puzzle.gridSize.rows; r++) {
-        const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${currentCol}"]`);
-        if (nextCell) {
+    // 1. Try finding next EMPTY cell down in the same column (starting from the row AFTER the current one)
+    for (let r = startRow + 1; r < puzzle.gridSize.rows; r++) {
+        const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${startCol}"]`);
+        // *** ADD CHECK: Is the cell empty? ***
+        if (nextCell && nextCell.value === '') {
             nextCell.focus();
-            // nextCell.select(); // Optional: select text in next cell
-            return; // Found and focused
+            return; // Found and focused empty cell
         }
     }
 
-    // 2. Try finding the first cell in the next columns to the right
-    for (let c = currentCol + 1; c < puzzle.gridSize.cols; c++) {
-        for (let r = 0; r < puzzle.gridSize.rows; r++) { // Check all rows in the next column
+    // 2. Try finding the first EMPTY cell in the next columns to the right
+    for (let c = startCol + 1; c < puzzle.gridSize.cols; c++) {
+        // Check all rows in this column from top to bottom
+        for (let r = 0; r < puzzle.gridSize.rows; r++) {
             const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
-            if (nextCell) {
+             // *** ADD CHECK: Is the cell empty? ***
+            if (nextCell && nextCell.value === '') {
                 nextCell.focus();
-                // nextCell.select(); // Optional
-                return; // Found and focused
+                return; // Found and focused empty cell
             }
         }
     }
 
-    // 3. If no cell found (e.g., at the very last input), do nothing
-}
+    // 3. If still not found, wrap around: Try finding the first EMPTY cell from the top-left
+    for (let c = 0; c <= startCol; c++) { // Include current column in wrap-around search
+        for (let r = 0; r < puzzle.gridSize.rows; r++) {
+             // Don't wrap back to the exact starting cell unless it's the only one
+             if (c === startCol && r === startRow) continue;
 
+            const nextCell = document.querySelector(`.grid-cell.cell-unknown[data-row="${r}"][data-col="${c}"]`);
+             // *** ADD CHECK: Is the cell empty? ***
+            if (nextCell && nextCell.value === '') {
+                nextCell.focus();
+                return; // Found and focused empty cell
+            }
+        }
+    }
+
+
+    // 4. If no empty cell is found anywhere, do nothing (leave focus as is)
+}
 function handleBackspace() {
     if (!lastFocusedCell) return;
 
