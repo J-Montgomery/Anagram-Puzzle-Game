@@ -894,7 +894,7 @@ function initializeGame() {
 
     initializeDictionary();
 
-    document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
+    document.getElementById('clueText').textContent = `${puzzle.clue}`;
     generateGrid();
 
     toggleNativeKeyboard(useNativeKeyboard);
