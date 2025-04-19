@@ -57,8 +57,14 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeModal('settingsModal')">&times;</span>
             <h3>Settings</h3>
-            <label>
-                <input type="checkbox" id="easyModeCheckbox" onchange="toggleEasyMode(this.checked)"> Easy Mode (Show possible words)
+            <!-- Wrap labels for better accessibility -->
+            <label style="display: block; margin-bottom: 10px;">
+                <input type="checkbox" id="easyModeCheckbox" onchange="toggleEasyMode(this.checked)">
+                Easy Mode (Show possible words)
+            </label>
+            <label style="display: block;">
+                <input type="checkbox" id="nativeKeyboardCheckbox" onchange="toggleNativeKeyboard(this.checked)">
+                Use Native Keyboard (Mobile)
             </label>
         </div>
     </div>

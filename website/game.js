@@ -42,6 +42,7 @@ function toggleEasyMode(isEasy) {
 let puzzle;
 let lastFocusedCell = null;
 let solutionFadeOutTimeoutId = null;
+let useNativeKeyboard = false;
 
 function loadPuzzleData() {
     const puzzleDataElement = document.getElementById('puzzle-data');
@@ -537,15 +538,58 @@ function handleGridKeyDown(event) {
     }
 }
 
+function toggleNativeKeyboard(isEnabled) {
+    useNativeKeyboard = isEnabled; // Update the state variable
 
+    // Get all the editable grid cells
+    const inputCells = document.querySelectorAll('.grid-container .cell-unknown');
+
+    inputCells.forEach(cell => {
+        if (useNativeKeyboard) {
+            // Allow native keyboard: remove the inputmode attribute
+            cell.removeAttribute('inputmode');
+            // Optional: Reset cursor if you changed it in CSS
+            // cell.style.cursor = '';
+        } else {
+            // Suppress native keyboard
+            cell.inputMode = 'none';
+            // Optional: Set cursor if using CSS cue
+            // cell.style.cursor = 'default';
+
+            // *** Crucial for iOS Safari ***
+            // Setting readOnly briefly and removing it can help
+            // ensure the keyboard is dismissed if it was somehow shown.
+            cell.readOnly = true;
+            setTimeout(() => { cell.readOnly = false; }, 0);
+        }
+    });
+
+    // Optional: If a cell is focused, blur and re-focus to apply change immediately
+    if (document.activeElement && document.activeElement.matches('.cell-unknown')) {
+        const currentFocus = document.activeElement;
+        currentFocus.blur();
+        // Re-focus might bring up keyboard if enabled, which is desired
+        // Use timeout to ensure blur completes
+        setTimeout(() => currentFocus.focus(), 0);
+    }
+
+    console.log(`Native keyboard ${useNativeKeyboard ? 'enabled' : 'disabled'}`);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    const nativeKeyboardCheckbox = document.getElementById('nativeKeyboardCheckbox');
+    if (nativeKeyboardCheckbox) {
+         useNativeKeyboard = nativeKeyboardCheckbox.checked;
+    }
+
     if (!loadPuzzleData()) {
         return;
     }
 
     document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
     generateGrid();
+
+    toggleNativeKeyboard(useNativeKeyboard);
 
     const firstInputCell = document.querySelector('.grid-cell.cell-unknown');
     if (firstInputCell) {

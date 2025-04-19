@@ -188,6 +188,14 @@ ul.dashed > li:before {
     text-transform: uppercase; /* Match other cells */
     font-family: sans-serif; /* Match body */
 }
+
+.cell-unknown[inputmode="none"] {
+    /* Example: Add a subtle visual cue */
+    /* border: 1px dashed var(--key-bg); */
+    /* Or change cursor slightly */
+     cursor: default;
+}
+
 .cell-prefilled {
     background-color: var(--prefilled-bg);
     color: var(--text-color);
