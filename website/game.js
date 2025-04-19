@@ -32,44 +32,93 @@ function toggleEasyMode(isEasy) {
     }
 }
 
-// --- Game Setup & Grid Generation (Example) ---
-const puzzle = {
-    rootWord: "LISTEN",
-    clue: "Pay attention quietly.",
-    solutionSentence: "SILENT LISTENERS", // The final text to display
-    solutionWords: ["SILENT", "LISTEN", "LISTENERS"], // *** ADD THIS ARRAY ***
-    // Grid layout... (keep the rest as is, including wordIndex/letterIndex)
-    layout: [
-        // Word 0: SILENT
-        { type: 1, coord: [0, 3], wordIndex: 0, letterIndex: 0 },
-        { type: 1, coord: [1, 3], wordIndex: 0, letterIndex: 1 },
-        { type: 1, coord: [2, 3], wordIndex: 0, letterIndex: 2 },
-        { type: 1, coord: [3, 3], wordIndex: 0, letterIndex: 3 },
-        { type: 1, coord: [4, 3], wordIndex: 0, letterIndex: 4 },
-        { type: 1, coord: [5, 3], wordIndex: 0, letterIndex: 5 },
+let puzzle;
 
-        // Word 1: LISTEN (Root)
-        { type: 2, coord: [6, 0], char: 'L', wordIndex: 1, letterIndex: 0 },
-        { type: 2, coord: [6, 1], char: 'I', wordIndex: 1, letterIndex: 1 },
-        { type: 2, coord: [6, 2], char: 'S', wordIndex: 1, letterIndex: 2 },
-        { type: 2, coord: [6, 3], char: 'T', wordIndex: 1, letterIndex: 3 },
-        { type: 2, coord: [6, 4], char: 'E', wordIndex: 1, letterIndex: 4 },
-        { type: 2, coord: [6, 5], char: 'N', wordIndex: 1, letterIndex: 5 },
+function loadPuzzleData() {
+    const puzzleDataElement = document.getElementById('puzzle-data');
+    if (!puzzleDataElement || puzzleDataElement.type !== 'application/json') {
+        console.error('Puzzle data script tag is missing or has incorrect type!');
+        return false;
+    }
 
-        // Word 2: LISTENERS
-        { type: 1, coord: [7, 3], wordIndex: 2, letterIndex: 0 },
-        { type: 1, coord: [8, 3], wordIndex: 2, letterIndex: 1 },
-        { type: 3, coord: [9, 3], char: 'S', wordIndex: 2, letterIndex: 2 }, // Prefilled 'S'
-        { type: 1, coord: [10, 3], wordIndex: 2, letterIndex: 3 },
-        { type: 1, coord: [11, 3], wordIndex: 2, letterIndex: 4 },
-        { type: 1, coord: [12, 3], wordIndex: 2, letterIndex: 5 },
-        { type: 1, coord: [13, 3], wordIndex: 2, letterIndex: 6 },
-        { type: 1, coord: [14, 3], wordIndex: 2, letterIndex: 7 },
-        { type: 1, coord: [15, 3], wordIndex: 2, letterIndex: 8 },
-    ],
-    gridSize: { rows: 16, cols: 7 },
-    anagrams: ["SILENT", "LISTEN", "LISTENERS", "INLETS", "TINSEL", "ENLIST"]
-};
+    try {
+        // Get the JSON string from the script tag's text content
+        const jsonString = puzzleDataElement.textContent;
+
+        // Parse the JSON string into our puzzle object
+        puzzle = JSON.parse(jsonString);
+
+        // Quick validation (optional but recommended)
+        if (!puzzle.rootWord || !puzzle.clue || !puzzle.solutionSentence ||
+            !puzzle.solutionWords || !puzzle.layout || !puzzle.gridSize ||
+            !puzzle.anagrams) {
+            console.error('Puzzle data is incomplete or malformed.');
+            puzzle = null; // Prevent using incomplete data
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error parsing puzzle data JSON:', error);
+        return false;
+    }
+}
+
+function generateGrid() {
+    if (!puzzle) {
+        console.error("Cannot generate grid: Puzzle data not loaded.");
+        return;
+    }
+    const container = document.getElementById('gridContainer');
+    container.innerHTML = ''; // Clear previous grid
+    container.style.gridTemplateColumns = `repeat(${puzzle.gridSize.cols}, 40px)`;
+    container.style.gridTemplateRows = `repeat(${puzzle.gridSize.rows}, 40px)`;
+
+    const cellMap = new Map(); // Store cell info by "row-col" string
+
+    // Populate map with defined cells
+    puzzle.layout.forEach(cellDef => {
+        const key = `${cellDef.coord[0]}-${cellDef.coord[1]}`;
+        cellMap.set(key, cellDef);
+    });
+
+    // Create grid elements
+    for (let r = 0; r < puzzle.gridSize.rows; r++) {
+        for (let c = 0; c < puzzle.gridSize.cols; c++) {
+            const key = `${r}-${c}`;
+            const cellDef = cellMap.get(key);
+            let cellElement;
+
+            if (cellDef) {
+                if (cellDef.type === 1) { // Unknown
+                    cellElement = document.createElement('input');
+                    cellElement.type = 'text';
+                    cellElement.maxLength = 1;
+                    cellElement.classList.add('grid-cell', 'cell-unknown');
+                    cellElement.dataset.row = r;
+                    cellElement.dataset.col = c;
+                    cellElement.dataset.wordIndex = cellDef.wordIndex;
+                    cellElement.dataset.letterIndex = cellDef.letterIndex;
+                } else { // Root or Prefilled
+                    cellElement = document.createElement('div');
+                    cellElement.classList.add('grid-cell');
+                    cellElement.textContent = cellDef.char || '';
+                    if (cellDef.type === 2) {
+                        cellElement.classList.add('cell-root');
+                    } else { // type 3
+                        cellElement.classList.add('cell-prefilled');
+                    }
+                    cellElement.dataset.wordIndex = cellDef.wordIndex;
+                    cellElement.dataset.letterIndex = cellDef.letterIndex;
+                }
+            } else { // Empty
+                cellElement = document.createElement('div');
+                cellElement.classList.add('grid-cell', 'cell-empty');
+            }
+            container.appendChild(cellElement);
+        }
+    }
+}
 
 function generateGrid() {
     const container = document.getElementById('gridContainer');
@@ -221,8 +270,16 @@ function checkSolutionAttempt() {
 
 // --- Initial Setup ---
 document.addEventListener('DOMContentLoaded', () => {
+    // *** LOAD PUZZLE DATA FIRST ***
+    if (!loadPuzzleData()) {
+        // If loading fails, show an error
+        document.getElementById('clueText').textContent = 'Error loading puzzle data!';
+        return; // Stop initialization
+    }
+
+    // Now that puzzle data is loaded, proceed with setup
     document.getElementById('clueText').textContent = `Clue: ${puzzle.clue}`;
-    generateGrid(); // Generate the grid first
+    generateGrid(); // Generate the grid
 
     // Check initial state of easy mode checkbox
     const easyModeCheckbox = document.getElementById('easyModeCheckbox');
@@ -230,8 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
          toggleEasyMode(true); // Call toggle function to ensure consistency
     }
 
-    // *** ADDED EVENT LISTENER ***
-    // Add listener to the grid container for input events on unknown cells
     // Add listener to the grid container for input events on unknown cells
     const gridContainer = document.getElementById('gridContainer');
     if (gridContainer) {
@@ -242,15 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize solution display as hidden (no text, opacity 0)
+    // Initialize solution display as hidden
     const solutionDisplay = document.getElementById('solutionDisplay');
     solutionDisplay.textContent = '';
-    solutionDisplay.style.opacity = 0; // Start fully transparent
-
-
-    // TODO: Add event listeners for keyboard (physical and virtual)
-    // TODO: Add input handling logic for grid cells (focus, backspace, validation)
-    // TODO: Add 'Enter' key logic for word submission/checking
-    // TODO: Add final puzzle check logic (more robust than checkSolutionAttempt)
-    // TODO: Add solve animation logic
+    solutionDisplay.style.opacity = 0;
 });
