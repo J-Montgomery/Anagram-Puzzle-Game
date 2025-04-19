@@ -1,16 +1,14 @@
 COMPILER = xelatex
 BUILDDIR = build
 
-FONT ?= "Libertinus Serif"
-
-all: crossword.pdf
+all: anagrammiton.pdf
 
 %.pdf: %.tex
 	@mkdir -p $(BUILDDIR)
 	@echo "Building $< with $(COMPILER)..."
 	@$(COMPILER) -interaction=nonstopmode -output-directory=$(BUILDDIR) \
 		-jobname=$(basename $@) \
-		"\def\mainfont{$(FONT)}\input{$<}" || \
+		"\input{$<}" || \
 		(echo "Error in compilation"; exit 1)
 	@cp $(BUILDDIR)/$@ ./
 	@echo "Successfully built $@"
